@@ -1,17 +1,17 @@
 from flet import (
     Page,
+    PagePlatform,
     PageTransitionsTheme,
     PageTransitionTheme,
     ScrollMode,
     SliderTheme,
-    Text,
     Theme,
     ThemeMode,
-    View,
     app,
 )
 from flet_routing import FletRouter, Params
 
+from views.Detail import DetailView
 from views.Home import HomeView
 from views.NewRegister import NewRegisterView
 
@@ -20,16 +20,18 @@ async def main(page: Page):
     page.theme_mode = ThemeMode.LIGHT
     page.scroll = ScrollMode.AUTO
 
+    page.platform = PagePlatform.LINUX
+
     page.theme = Theme(
         page_transitions=PageTransitionsTheme(
             windows=PageTransitionTheme.CUPERTINO,
             android=PageTransitionTheme.CUPERTINO,
-            linux=PageTransitionTheme.FADE_UPWARDS,
+            linux=PageTransitionTheme.CUPERTINO,
             ios=PageTransitionTheme.CUPERTINO,
             macos=PageTransitionTheme.CUPERTINO
         ),
         slider_theme=SliderTheme(
-            track_height=30
+            track_height=12
         )
     )
 
@@ -43,10 +45,8 @@ async def main(page: Page):
     def new_register(params: Params):
         return NewRegisterView(params)
 
-    @router.route("/test")
-    def test(params: Params):
-        return View("/test", controls=[Text("This is a test")])
-
-    # router.push("/create/register")
+    @router.route("/detail/:id")
+    def detail(params: Params):
+        return DetailView(params)
 
 app(target=main)
