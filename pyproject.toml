@@ -9,8 +9,8 @@ authors = [
 ]
 dependencies = [
   "flet==0.28.3",
-  "flet-local-notifications>=1.1.0",
-  "flet-routing>=1.0.0",
+  "flet-local-notifications>=1.2.0",
+  "flet-routing",
 ]
 
 [tool.flet]
