@@ -36,10 +36,6 @@ jobs:
         run: |
           uv sync
 
-      - name: Install Flet
-        run: |
-          uv pip install flet
-
       - name: Build APK
         run: |
           uv run flet build apk
