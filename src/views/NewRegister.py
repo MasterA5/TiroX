@@ -29,6 +29,7 @@ class NewRegisterView(View):
         super().__init__("/create/register")
         self.params = params
         self.router: FletRouter = self.params.router
+        self.scroll = "auto"
         self.controls = [
             Column(
                 controls=[
