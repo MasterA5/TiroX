@@ -42,6 +42,9 @@ class AnimatedButton(Container):
         self.running = False
 
     def did_mount(self):
+        if not self.page:
+            return
+
         self.page.run_task(self.__anim)
         return super().did_mount()
 
