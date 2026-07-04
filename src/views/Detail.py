@@ -40,7 +40,7 @@ class DetailView(View):
             ),
         )
         self.controls = [
-            DetailCard(value=self.data.value, date=self.data.date),
+            DetailCard(value=float(self.data.value), date=self.data.date),
             RangeCard(),
             Container(
                 content=Column(
