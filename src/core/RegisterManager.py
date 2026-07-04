@@ -1,7 +1,6 @@
 import datetime
 import json
 import os
-import random
 import uuid
 from dataclasses import asdict, dataclass, field
 from typing import Optional
@@ -12,6 +11,7 @@ class Register:
     id: uuid.UUID = field(default_factory=uuid.uuid4)
     hormone: str = ""
     value: float = 0.0
+    notes: str = ""
     date: datetime.datetime = field(default_factory=datetime.datetime.now)
 
     def to_dict(self):
@@ -28,6 +28,8 @@ class Register:
             data["id"] = uuid.UUID(data["id"])
         if "date" in data and isinstance(data["date"], str):
             data["date"] = datetime.datetime.fromisoformat(data["date"])
+        if "value" in data and not isinstance(data["value"], float):
+            data["value"] = float(data["value"])
         return cls(**data)
 
 
@@ -130,8 +132,13 @@ class RegisterManager:
         return None
 
     def get_all_registers(self) -> list[Register]:
-        return self.registers.copy()
+        return [register for register in self.registers]
 
     def clear_all_registers(self):
         self.registers.clear()
         self.__save_registers()
+
+    def get_last_register(self):
+        if not self.registers:
+            return None
+        return self.registers[-1]
