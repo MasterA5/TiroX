@@ -14,7 +14,7 @@ from flet import (
 
 
 class LastResultCard(Container):
-    def __init__(self):
+    def __init__(self, hormone: str, value: float, date: str):
         super().__init__()
         self.content = Column(
             controls=[
@@ -24,13 +24,13 @@ class LastResultCard(Container):
                     size=15,
                 ),
                 Text(
-                    value="TSH",
+                    value=hormone,
                     color=Colors.WHITE,
                     size=16,
                     weight=FontWeight.BOLD,
                 ),
                 Text(
-                    value="2.18",
+                    value=float(value),
                     color=Colors.WHITE,
                     size=28,
                     weight=FontWeight.BOLD,
@@ -66,7 +66,7 @@ class LastResultCard(Container):
                         ),
                         Container(
                             content=Text(
-                                "20 may 2024",
+                                date,
                                 color=Colors.WHITE,
                             )
                         ),
