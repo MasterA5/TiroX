@@ -1,8 +1,14 @@
+import datetime
+
 from flet import (
     AppBar,
+    BottomSheet,
+    Button,
     Colors,
     Column,
     Container,
+    CupertinoDatePicker,
+    DatePicker,
     Dropdown,
     DropdownOption,
     FontWeight,
@@ -10,9 +16,12 @@ from flet import (
     IconButton,
     Icons,
     InputBorder,
+    KeyboardType,
     MainAxisAlignment,
     PagePlatform,
     Row,
+    SnackBar,
+    SnackBarBehavior,
     Text,
     TextField,
     View,
@@ -22,14 +31,33 @@ from flet import (
 from flet_routing import FletRouter, Params
 
 from components.AnimatedButton import AnimatedButton
+from core.RegisterManager import Register, RegisterManager
+from utils.formater import Formater
 
 
 class NewRegisterView(View):
-    def __init__(self, params: Params):
+    def __init__(self, params: Params, register_manager: RegisterManager | None = None):
         super().__init__("/create/register")
         self.params = params
         self.router: FletRouter = self.params.router
+        self.register_manager = register_manager
+        self.selected_date = None
         self.scroll = "auto"
+        self.hormone_field = Dropdown(
+            options=[DropdownOption(key="TSH", content=Text("Hormona TSH"))],
+            label="Selecciona el tipo de hormona",
+            expand=True,
+        )
+        self.result_field = TextField(
+            label="Resultado", keyboard_type=KeyboardType.NUMBER
+        )
+        self.notes_field = TextField(
+            label="Notas",
+            multiline=True,
+            expand=True,
+            border=InputBorder.NONE,
+        )
+        self.date_text = Text("Fecha De Analisis")
         self.controls = [
             Column(
                 controls=[
@@ -63,20 +91,12 @@ class NewRegisterView(View):
                         content=Column(
                             controls=[
                                 Text("Selecciona La Hormona"),
-                                Dropdown(
-                                    options=[
-                                        DropdownOption(
-                                            key="TSH", content=Text("Hormona TSH")
-                                        )
-                                    ],
-                                    value="TSH",
-                                    expand=True,
-                                ),
+                                self.hormone_field,
                                 Container(
                                     content=Column(
                                         controls=[
                                             Text("Resultado"),
-                                            TextField(label="Resultado"),
+                                            self.result_field,
                                         ]
                                     ),
                                     padding=padding.only(top=20),
@@ -84,9 +104,21 @@ class NewRegisterView(View):
                                 Container(
                                     content=Column(
                                         controls=[
-                                            Text("Fecha De Analisis"),
-                                            Dropdown(
-                                                label="Fecha De Analisis", expand=True
+                                            self.date_text,
+                                            Button(
+                                                "Seleccionar Fecha",
+                                                on_click=lambda e: self.page.open(
+                                                    DatePicker(
+                                                        on_change=self.handle_date_select
+                                                    )
+                                                    if self.page.platform
+                                                    != PagePlatform.IOS
+                                                    else BottomSheet(
+                                                        content=CupertinoDatePicker(
+                                                            on_change=self.handle_date_select
+                                                        ),
+                                                    )
+                                                ),
                                             ),
                                         ]
                                     ),
@@ -97,12 +129,7 @@ class NewRegisterView(View):
                                         controls=[
                                             Text("Notas"),
                                             Container(
-                                                content=TextField(
-                                                    label="Notas",
-                                                    multiline=True,
-                                                    expand=True,
-                                                    border=InputBorder.NONE,
-                                                ),
+                                                content=self.notes_field,
                                                 height=200,
                                                 border=border.all(2, Colors.GREY_300),
                                                 border_radius=20,
@@ -114,13 +141,14 @@ class NewRegisterView(View):
                                                         text="Guardar",
                                                         final_width=110,
                                                         icon=Icons.SAVE_ALT,
+                                                        on_click=self.handle_sumbit,
                                                     ),
                                                 ],
                                                 alignment=MainAxisAlignment.CENTER,
                                             ),
                                         ]
                                     ),
-                                    padding=padding.only(top=20)
+                                    padding=padding.only(top=20),
                                 ),
                             ]
                         )
@@ -138,3 +166,52 @@ class NewRegisterView(View):
             ),
             center_title=True,
         )
+
+    def handle_sumbit(self, e):
+        if not self.selected_date:
+            self.selected_date = datetime.datetime.now()
+
+        if not self.hormone_field.value:
+            return
+
+        if not self.result_field.value:
+            return
+
+        if not self.notes_field.value:
+            return
+
+        if not self.selected_date:
+            return
+
+        register = self.register_manager.add_register(
+            Register(
+                hormone=self.hormone_field.value,
+                value=self.result_field.value,
+                notes=self.notes_field.value,
+                date=self.selected_date,
+            )
+        )
+
+        self.page.open(
+            SnackBar(
+                content=Row(
+                    controls=[
+                        Icon(Icons.CHECK_CIRCLE, color=Colors.WHITE),
+                        Text("Registro Creado"),
+                    ]
+                ),
+                behavior=SnackBarBehavior.FLOATING,
+                bgcolor=Colors.DEEP_PURPLE_ACCENT_200,
+            )
+        )
+
+        if register:
+            self.router.replace("/")
+
+    def handle_date_select(self, e):
+        self.selected_date = e.data
+        self.date_text.value = (
+            f"Fecha De Analisis: {Formater.format_datetime(self.selected_date)}"
+        )
+        self.date_text.update()
+        return self.selected_date
