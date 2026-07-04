@@ -1,3 +1,4 @@
+import datetime
 from typing import Callable
 
 from flet import (
@@ -16,6 +17,7 @@ from flet import (
     padding,
 )
 
+from utils.formater import Formater
 from utils.get_color_by_value import get_color_by_value
 
 
@@ -44,7 +46,7 @@ class HistoryCard(Container):
         self,
         on_click: Callable[[any], None] | None = None,
         value: float | str | None = None,
-        date: str | None = None,
+        date: str | datetime.datetime | None = None,
     ):
         super().__init__()
         self.value = value
@@ -58,7 +60,7 @@ class HistoryCard(Container):
                     controls=[
                         Text("TSH", size=19, weight=FontWeight.W_500),
                         Text(
-                            self.value,
+                            f"{self.value:.2f}",
                             color=self.text_color,
                             size=20,
                             weight=FontWeight.BOLD,
@@ -74,7 +76,7 @@ class HistoryCard(Container):
                 ),
                 Row(
                     controls=[
-                        Text(self.date),
+                        Text(Formater.format_datetime(str(self.date))),
                         HistoryCardTag(self.value),
                     ],
                     alignment=MainAxisAlignment.SPACE_BETWEEN,
