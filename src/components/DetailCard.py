@@ -20,11 +20,7 @@ class DetailCardTag(Container):
         self.text_color = text_color
         self.content = Row(
             controls=[
-                Text(
-                    self.tag_text,
-                    size=13,
-                    color=self.text_color
-                ),
+                Text(self.tag_text, size=13, color=self.text_color),
             ],
             tight=True,
             spacing=5,
@@ -38,7 +34,19 @@ class DetailCard(Container):
         super().__init__()
         self.value = value
         self.date = date
-        self.text, self.bgcolor, self.text_color = get_color_by_value(self.value)
+        self.text, self.bgcolor, self.text_color = get_color_by_value(
+            value=self.value,
+            bg_custom_colors=[
+                Colors.LIGHT_GREEN_ACCENT_700,
+                Colors.AMBER_600,
+                Colors.RED,
+            ],
+            txt_custom_colors=[
+                Colors.LIGHT_GREEN_50,
+                Colors.YELLOW_100,
+                Colors.RED_50,
+            ],
+        )
         self.content = Row(
             controls=[
                 Column(
