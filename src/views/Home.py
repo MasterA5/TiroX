@@ -16,11 +16,9 @@ from flet import (
     NavigationBarLabelBehavior,
     NavigationDrawer,
     NavigationDrawerDestination,
-    PopupMenuButton,
     Row,
     SafeArea,
     Text,
-    TextField,
     TextSpan,
     TextStyle,
     View,
@@ -34,7 +32,6 @@ from components.HistoryCard import HistoryCard
 from components.LastResultCard import LastResultCard
 from components.RangeCard import RangeCard
 from core.RegisterManager import RegisterManager
-from utils.get_colors_by_seed import get_colors_by_seed
 
 
 class HomeView(View):
@@ -111,7 +108,7 @@ class HomeView(View):
                         Icon(Icons.ERROR_OUTLINE, color=Colors.PURPLE_200, size=30),
                         Text("No Se econtraron registros", color=Colors.WHITE, size=25),
                     ],
-                    alignment=MainAxisAlignment.CENTER
+                    alignment=MainAxisAlignment.CENTER,
                 ),
                 padding=15,
                 bgcolor=Colors.DEEP_PURPLE_ACCENT_200,
