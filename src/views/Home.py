@@ -1,23 +1,26 @@
-import random
-import uuid
-
 from flet import (
     AppBar,
     Colors,
     Column,
     Container,
     ControlEvent,
+    CupertinoContextMenu,
+    CupertinoContextMenuAction,
     FontWeight,
+    Icon,
     IconButton,
     Icons,
     MainAxisAlignment,
     NavigationBar,
     NavigationBarDestination,
+    NavigationBarLabelBehavior,
     NavigationDrawer,
     NavigationDrawerDestination,
+    PopupMenuButton,
     Row,
     SafeArea,
     Text,
+    TextField,
     TextSpan,
     TextStyle,
     View,
@@ -30,14 +33,17 @@ from components.Chart import TiroXChart
 from components.HistoryCard import HistoryCard
 from components.LastResultCard import LastResultCard
 from components.RangeCard import RangeCard
+from core.RegisterManager import RegisterManager
+from utils.get_colors_by_seed import get_colors_by_seed
 
 
 class HomeView(View):
-    def __init__(self, params: Params):
+    def __init__(self, params: Params, manager: RegisterManager | None = None):
         super().__init__()
         self.route = "/"
         self.params = params
         self.router: FletRouter = self.params.router
+        self.register_manager = manager
         self.appbar = AppBar(
             title=Text(
                 "Tiro",
@@ -59,11 +65,26 @@ class HomeView(View):
         )
         self.drawer = NavigationDrawer(
             controls=[
+                Container(
+                    content=Text(
+                        "Tiro",
+                        size=30,
+                        weight=FontWeight.BOLD,
+                        spans=[
+                            TextSpan(
+                                "X",
+                                style=TextStyle(color=Colors.DEEP_PURPLE_ACCENT_200),
+                            )
+                        ],
+                    ),
+                    padding=padding.only(left=10),
+                ),
                 NavigationDrawerDestination(label="Home", icon=Icons.HOME),
                 NavigationDrawerDestination(label="Your Data", icon=Icons.FINGERPRINT),
                 NavigationDrawerDestination(label="Settings", icon=Icons.SETTINGS),
             ],
             on_change=self.__handle_nav,
+            tile_padding=23,
         )
         self.navigation_bar = NavigationBar(
             destinations=[
@@ -72,20 +93,45 @@ class HomeView(View):
                 NavigationBarDestination(label="Settings", icon=Icons.SETTINGS),
             ],
             on_change=self.__handle_nav,
+            label_behavior=NavigationBarLabelBehavior.ONLY_SHOW_SELECTED,
         )
         self.main_container = SafeArea(content=self.__build_home_content(), expand=True)
         self.controls = [self.main_container]
         self.scroll = "auto"
         self.expand = True
+        self.current_index = 0
 
     def __build_home_content(self):
+        last_register = self.register_manager.get_last_register()
+
+        if not last_register:
+            last_result_card = Container(
+                content=Row(
+                    controls=[
+                        Icon(Icons.ERROR_OUTLINE, color=Colors.PURPLE_200, size=30),
+                        Text("No Se econtraron registros", color=Colors.WHITE, size=25),
+                    ],
+                    alignment=MainAxisAlignment.CENTER
+                ),
+                padding=15,
+                bgcolor=Colors.DEEP_PURPLE_ACCENT_200,
+                border_radius=20,
+                height=200,
+            )
+        else:
+            last_result_card = LastResultCard(
+                hormone=last_register.hormone,
+                value=last_register.value,
+                date=last_register.date,
+            )
+
         return Column(
             controls=[
                 Container(
                     content=Text("Resumen", weight=FontWeight.BOLD, size=16),
                     padding=padding.only(top=30),
                 ),
-                LastResultCard(),
+                last_result_card,
                 RangeCard(),
                 TiroXChart(),
                 Row(
@@ -104,25 +150,45 @@ class HomeView(View):
         )
 
     def __build_history_content(self):
-        return Column(
-            controls=[
-                HistoryCard(
-                    on_click=lambda e: self.router.push(
-                        f"/detail/{uuid.uuid4()}"
+        registers = self.register_manager.get_all_registers()
+
+        history_page = Column(controls=[], expand=True, scroll="auto")
+
+        for register in registers:
+            reg_id = register.id
+            reg_value = register.value
+            reg_date = register.date
+
+            card = CupertinoContextMenu(
+                content=HistoryCard(
+                    on_click=lambda e, id=reg_id: self.router.push(
+                        f"/detail/{id}", {"lst_idx": 1}
                     ),
-                    value=float(f"{random.uniform(1, 9):.2f}"),
-                    date="20 may 2024",
+                    value=float(reg_value),
+                    date=reg_date,
                 ),
-            ]
-        )
+                actions=[
+                    CupertinoContextMenuAction(
+                        trailing_icon=Icons.DELETE,
+                        on_click=lambda _: print("Action 3"),
+                        text="Eliminar Registro",
+                    )
+                ],
+            )
+
+            history_page.controls.append(card)
+
+        return history_page
 
     def __handle_nav(self, e: ControlEvent):
         if not e:
-            return
+            idx = self.params.private.get("lst_idx")
+        else:
+            idx = int(e.data)
 
-        idx = int(e.data)
+        self.current_index = idx
 
-        match idx:
+        match self.current_index:
             case 0:
                 self.main_container.content = self.__build_home_content()
             case 1:
@@ -135,3 +201,10 @@ class HomeView(View):
 
         self.main_container.update()
         self.page.update()
+
+    def did_mount(self):
+        if self.params.private.get("lst_idx", 0):
+            self.current_index = self.params.private.get("lst_idx", 0)
+            self.__handle_nav(None)
+        self.params.private.clear()
+        return super().did_mount()
