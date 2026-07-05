@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from flet import (
     AppBar,
     Colors,
@@ -97,6 +99,7 @@ class HomeView(View):
         self.scroll = "auto"
         self.expand = True
         self.current_index = 0
+        self.history_page = Column(controls=[], expand=True, scroll="auto")
 
     def __build_home_content(self):
         last_register = self.register_manager.get_last_register()
@@ -126,7 +129,7 @@ class HomeView(View):
             controls=[
                 Container(
                     content=Text("Resumen", weight=FontWeight.BOLD, size=16),
-                    padding=padding.only(top=30),
+                    padding=padding.only(top=5),
                 ),
                 last_result_card,
                 RangeCard(),
@@ -147,9 +150,21 @@ class HomeView(View):
         )
 
     def __build_history_content(self):
+        self.history_page.controls.clear()
         registers = self.register_manager.get_all_registers()
 
-        history_page = Column(controls=[], expand=True, scroll="auto")
+        if not registers:
+            self.history_page.controls.append(
+                Row(
+                    controls=[
+                        Column(
+                            controls=[Text("No se encontraron registros", size=30)],
+                            alignment=MainAxisAlignment.CENTER,
+                        ),
+                    ],
+                    alignment=MainAxisAlignment.CENTER,
+                )
+            )
 
         for register in registers:
             reg_id = register.id
@@ -157,25 +172,33 @@ class HomeView(View):
             reg_date = register.date
 
             card = CupertinoContextMenu(
-                content=HistoryCard(
-                    on_click=lambda e, id=reg_id: self.router.push(
-                        f"/detail/{id}", {"lst_idx": 1}
+                content=Container(
+                    content=HistoryCard(
+                        on_click=lambda e, id=reg_id: self.router.push(
+                            f"/detail/{id}", {"lst_idx": 1}
+                        ),
+                        value=float(reg_value),
+                        date=reg_date,
                     ),
-                    value=float(reg_value),
-                    date=reg_date,
                 ),
                 actions=[
                     CupertinoContextMenuAction(
                         trailing_icon=Icons.DELETE,
-                        on_click=lambda _: print("Action 3"),
+                        on_click=lambda e, id=reg_id: self.delete_register(id),
                         text="Eliminar Registro",
                     )
                 ],
             )
 
-            history_page.controls.append(card)
+            self.history_page.controls.append(card)
 
-        return history_page
+        return self.history_page
+
+    def delete_register(self, reg_id: UUID):
+        self.register_manager.delete_register(reg_id)
+
+        self.__build_history_content()
+        self.update()
 
     def __handle_nav(self, e: ControlEvent):
         if not e:
