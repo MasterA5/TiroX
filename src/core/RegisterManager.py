@@ -83,7 +83,6 @@ class RegisterManager:
         file_path = os.path.join(registers_path, f"{self.file_name}.json")
 
         if not os.path.exists(file_path):
-            print(f"File {file_path} Not Found. Init With Empty List.")
             return
 
         try:
@@ -91,7 +90,6 @@ class RegisterManager:
                 data = json.load(f)
 
             self.registers = [Register.from_dict(item) for item in data]
-            print(f"{len(self.registers)} Registers Loaded")
 
         except json.JSONDecodeError as e:
             print(f"Error loading JSON file: {e}")
@@ -100,7 +98,6 @@ class RegisterManager:
 
     def add_register(self, register: Register) -> Optional[Register]:
         if self.get_register_data_by_id(register.id):
-            print(f"Register with ID {register.id} already exists")
             return None
 
         self.registers.append(register)
@@ -113,12 +110,10 @@ class RegisterManager:
 
         register = self.get_register_data_by_id(id)
         if not register:
-            print(f"Register with ID {register.id} not found")
             return False
 
         self.registers.remove(register)
         self.__save_registers()
-        print(f"Register {id} deleted")
         return True
 
     def get_register_data_by_id(self, id: uuid.UUID) -> Optional[Register]:
