@@ -108,14 +108,10 @@ class NewRegisterView(View):
                                             Button(
                                                 "Seleccionar Fecha",
                                                 on_click=lambda e: self.page.open(
-                                                    DatePicker(
-                                                        on_change=self.handle_date_select
-                                                    )
-                                                    if self.page.platform
-                                                    != PagePlatform.IOS
-                                                    else BottomSheet(
+                                                    BottomSheet(
                                                         content=CupertinoDatePicker(
-                                                            on_change=self.handle_date_select
+                                                            on_change=self.handle_date_select,
+                                                            use_24h_format=True,
                                                         ),
                                                     )
                                                 ),
@@ -188,7 +184,6 @@ class NewRegisterView(View):
                 hormone=self.hormone_field.value,
                 value=self.result_field.value,
                 notes=self.notes_field.value,
-                date=self.selected_date,
             )
         )
 
@@ -211,7 +206,7 @@ class NewRegisterView(View):
     def handle_date_select(self, e):
         self.selected_date = e.data
         self.date_text.value = (
-            f"Fecha De Analisis: {Formater.format_datetime(self.selected_date)}"
+            f"Fecha De Analisis: {Formater.format_datetime(self.selected_date)[0]}"
         )
         self.date_text.update()
         return self.selected_date
