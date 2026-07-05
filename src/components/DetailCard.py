@@ -3,6 +3,8 @@ from flet import (
     Column,
     Container,
     FontWeight,
+    Icon,
+    Icons,
     Row,
     Text,
     TextSpan,
@@ -10,16 +12,19 @@ from flet import (
 )
 
 from utils.get_color_by_value import get_color_by_value
+from utils.get_icon_by_value import get_icon_by_value
 
 
 class DetailCardTag(Container):
-    def __init__(self, tag_text: str, bgcolor: Colors, text_color: Colors):
+    def __init__(self, tag_text: str, bgcolor: Colors, text_color: Colors, icon: Icons):
         super().__init__()
         self.tag_text = tag_text
         self.bgcolor = bgcolor
         self.text_color = text_color
+        self.icon = icon
         self.content = Row(
             controls=[
+                Icon(self.icon, color=self.text_color, size=15),
                 Text(self.tag_text, size=13, color=self.text_color),
             ],
             tight=True,
@@ -47,6 +52,7 @@ class DetailCard(Container):
                 Colors.RED_50,
             ],
         )
+        self.icon = get_icon_by_value(self.value)
         self.content = Row(
             controls=[
                 Column(
@@ -69,11 +75,18 @@ class DetailCard(Container):
                                 )
                             ],
                         ),
-                        DetailCardTag(self.text, self.bgcolor, self.text_color),
+                        DetailCardTag(
+                            self.text, self.bgcolor, self.text_color, self.icon
+                        ),
                         Container(
-                            content=Text(
-                                self.date,
-                                color=Colors.WHITE,
+                            content=Row(
+                                controls=[
+                                    Icon(Icons.CALENDAR_MONTH, color=self.text_color),
+                                    Text(
+                                        self.date,
+                                        color=Colors.WHITE,
+                                    ),
+                                ]
                             )
                         ),
                     ]
