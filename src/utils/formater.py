@@ -31,6 +31,6 @@ class Formater:
             datetime.split("T")[0].split(" ")[0].split("-")[::-1]
         )
 
-        formated_hour = datetime.split("T")[1].split(".")[0]
+        formated_hour = datetime.split("T")[0].split(" ")[1].split(".")[0]
 
         return formated_datetime, formated_hour
