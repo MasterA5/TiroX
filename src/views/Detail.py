@@ -20,6 +20,7 @@ from flet_routing import Params
 from components.DetailCard import DetailCard
 from components.RangeCard import RangeCard
 from core.RegisterManager import RegisterManager
+from utils.formater import Formater
 
 
 class DetailView(View):
@@ -31,7 +32,9 @@ class DetailView(View):
         self.register_manager = manager
         self.data = self.get_register_info()
         self.appbar = AppBar(
-            title=Text("Details"),
+            title=Text(
+                f"{Formater.format_datetime(str(self.data.date))[0]}"
+            ),
             leading=IconButton(
                 icon=Icons.ARROW_BACK,
                 on_click=lambda e: self.router.replace(
@@ -40,7 +43,10 @@ class DetailView(View):
             ),
         )
         self.controls = [
-            DetailCard(value=float(self.data.value), date=self.data.date),
+            DetailCard(
+                value=float(self.data.value),
+                date=Formater.format_datetime(str(self.data.date), legible=True),
+            ),
             RangeCard(),
             Container(
                 content=Column(
@@ -50,8 +56,7 @@ class DetailView(View):
                             controls=[
                                 Container(
                                     content=Text(
-                                        self.data.notes,
-                                        weight=FontWeight.W_800
+                                        self.data.notes, weight=FontWeight.W_800
                                     ),
                                     padding=10,
                                     border=border.all(3, Colors.GREY_300),
