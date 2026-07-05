@@ -7,6 +7,8 @@ from flet import (
     Column,
     Container,
     FontWeight,
+    Icon,
+    Icons,
     MainAxisAlignment,
     Row,
     ShadowBlurStyle,
@@ -19,6 +21,7 @@ from flet import (
 
 from utils.formater import Formater
 from utils.get_color_by_value import get_color_by_value
+from utils.get_icon_by_value import get_icon_by_value
 
 
 class HistoryCardTag(Container):
@@ -30,11 +33,18 @@ class HistoryCardTag(Container):
 
     def build(self):
         tag_text, bgcolor, text_color = get_color_by_value(self.value)
+        icon = get_icon_by_value(self.value)
 
-        self.content = Text(
-            tag_text,
-            color=text_color,
-            weight=FontWeight.BOLD,
+        self.content = Row(
+            controls=[
+                Icon(name=icon, color=text_color, size=15),
+                Text(
+                    tag_text,
+                    color=text_color,
+                    weight=FontWeight.BOLD,
+                ),
+            ],
+            spacing=4,
         )
 
         self.bgcolor = bgcolor
@@ -53,6 +63,9 @@ class HistoryCard(Container):
         self.date = date
         self.value_text, self.card_bgcolor, self.text_color = get_color_by_value(
             self.value
+        )
+        self.formated_date, self.formated_hour = Formater.format_datetime(
+            str(self.date)
         )
         self.content = Column(
             controls=[
@@ -76,7 +89,28 @@ class HistoryCard(Container):
                 ),
                 Row(
                     controls=[
-                        Text(Formater.format_datetime(str(self.date))),
+                        Column(
+                            controls=[
+                                Row(
+                                    controls=[
+                                        Row(
+                                            controls=[
+                                                Icon(Icons.CALENDAR_MONTH, size=20),
+                                                Text(self.formated_date),
+                                            ],
+                                            spacing=3,
+                                        ),
+                                    ]
+                                ),
+                                Row(
+                                    controls=[
+                                        Icon(Icons.ACCESS_TIME, size=20),
+                                        Text(self.formated_hour),
+                                    ],
+                                    spacing=3,
+                                ),
+                            ]
+                        ),
                         HistoryCardTag(self.value),
                     ],
                     alignment=MainAxisAlignment.SPACE_BETWEEN,
