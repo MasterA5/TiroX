@@ -181,7 +181,7 @@ class NewRegisterView(View):
         register = self.register_manager.add_register(
             Register(
                 hormone=self.hormone_field.value,
-                value=self.result_field.value,
+                value=float(self.result_field.value),
                 notes=self.notes_field.value,
             )
         )
