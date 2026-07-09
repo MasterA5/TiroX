@@ -117,7 +117,9 @@ class HomeView(View):
                 border_radius=20,
                 height=200,
             )
+            range_card = RangeCard(0)
         else:
+            range_card = RangeCard(last_register.value)
             last_result_card = LastResultCard(
                 hormone=last_register.hormone,
                 value=last_register.value,
@@ -131,7 +133,7 @@ class HomeView(View):
                     padding=padding.only(top=5),
                 ),
                 last_result_card,
-                RangeCard(last_register.value),
+                range_card,
                 Row(
                     controls=[
                         AnimatedButton(
