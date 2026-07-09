@@ -163,6 +163,7 @@ class NewRegisterView(View):
         )
 
     def handle_sumbit(self, e):
+        print(self.hormone_field)
         if not self.selected_date:
             self.selected_date = datetime.datetime.now()
 
@@ -170,9 +171,6 @@ class NewRegisterView(View):
             return
 
         if not self.result_field.value:
-            return
-
-        if not self.notes_field.value:
             return
 
         if not self.selected_date:
