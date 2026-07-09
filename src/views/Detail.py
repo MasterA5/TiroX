@@ -32,9 +32,7 @@ class DetailView(View):
         self.register_manager = manager
         self.data = self.get_register_info()
         self.appbar = AppBar(
-            title=Text(
-                f"{Formater.format_datetime(str(self.data.date))[0]}"
-            ),
+            title=Text(f"{Formater.format_datetime(str(self.data.date))[0]}"),
             leading=IconButton(
                 icon=Icons.ARROW_BACK,
                 on_click=lambda e: self.router.replace(
@@ -47,7 +45,7 @@ class DetailView(View):
                 value=float(self.data.value),
                 date=Formater.format_datetime(str(self.data.date), legible=True),
             ),
-            RangeCard(),
+            RangeCard(self.data.value),
             Container(
                 content=Column(
                     controls=[
@@ -56,7 +54,10 @@ class DetailView(View):
                             controls=[
                                 Container(
                                     content=Text(
-                                        self.data.notes, weight=FontWeight.W_800
+                                        "No Hay Notas En Este Registro"
+                                        if not self.data.notes
+                                        else self.data.notes,
+                                        weight=FontWeight.W_800,
                                     ),
                                     padding=10,
                                     border=border.all(3, Colors.GREY_300),
