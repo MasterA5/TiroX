@@ -29,7 +29,6 @@ from flet import (
 from flet_routing import FletRouter, Params
 
 from components.AnimatedButton import AnimatedButton
-from components.Chart import TiroXChart
 from components.HistoryCard import HistoryCard
 from components.LastResultCard import LastResultCard
 from components.RangeCard import RangeCard
@@ -132,8 +131,7 @@ class HomeView(View):
                     padding=padding.only(top=5),
                 ),
                 last_result_card,
-                RangeCard(),
-                TiroXChart(),
+                RangeCard(last_register.value),
                 Row(
                     controls=[
                         AnimatedButton(
