@@ -14,13 +14,15 @@ from flet import (
 from utils.formater import Formater
 from utils.get_color_by_value import get_color_by_value
 from utils.get_icon_by_value import get_icon_by_value
+from utils.get_text_by_value import get_text_by_value
 
 
 class LastResultCardTag(Container):
     def __init__(self, value: float | int | str):
         super().__init__()
         self.value = value
-        self.tag_text, self.bgcolor, self.text_color = get_color_by_value(
+        self.tag_text = get_text_by_value(self.value)
+        self.bgcolor, self.text_color = get_color_by_value(
             float(self.value),
             bg_custom_colors=[
                 Colors.LIGHT_GREEN_ACCENT_700,

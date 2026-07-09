@@ -22,6 +22,7 @@ from flet import (
 from utils.formater import Formater
 from utils.get_color_by_value import get_color_by_value
 from utils.get_icon_by_value import get_icon_by_value
+from utils.get_text_by_value import get_text_by_value
 
 
 class HistoryCardTag(Container):
@@ -32,7 +33,8 @@ class HistoryCardTag(Container):
         self.value = value
 
     def build(self):
-        tag_text, bgcolor, text_color = get_color_by_value(self.value)
+        tag_text = get_text_by_value(self.value)
+        bgcolor, text_color = get_color_by_value(self.value)
         icon = get_icon_by_value(self.value)
 
         self.content = Row(
@@ -61,9 +63,8 @@ class HistoryCard(Container):
         super().__init__()
         self.value = value
         self.date = date
-        self.value_text, self.card_bgcolor, self.text_color = get_color_by_value(
-            self.value
-        )
+        self.value_text = get_text_by_value(self.value)
+        self.card_bgcolor, self.text_color = get_color_by_value(self.value)
         self.formated_date, self.formated_hour = Formater.format_datetime(
             str(self.date)
         )

@@ -13,6 +13,7 @@ from flet import (
 
 from utils.get_color_by_value import get_color_by_value
 from utils.get_icon_by_value import get_icon_by_value
+from utils.get_text_by_value import get_text_by_value
 
 
 class DetailCardTag(Container):
@@ -39,7 +40,8 @@ class DetailCard(Container):
         super().__init__()
         self.value = value
         self.date = date
-        self.text, self.bgcolor, self.text_color = get_color_by_value(
+        self.text = get_text_by_value(self.value)
+        self.bgcolor, self.text_color = get_color_by_value(
             value=self.value,
             bg_custom_colors=[
                 Colors.LIGHT_GREEN_ACCENT_700,
