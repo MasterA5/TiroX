@@ -1,13 +1,8 @@
-import datetime
-
 from flet import (
     AppBar,
-    BottomSheet,
-    Button,
     Colors,
     Column,
     Container,
-    CupertinoDatePicker,
     Dropdown,
     DropdownOption,
     FontWeight,
@@ -31,7 +26,6 @@ from flet_routing import FletRouter, Params
 
 from components.AnimatedButton import AnimatedButton
 from core.RegisterManager import Register, RegisterManager
-from utils.formater import Formater
 
 
 class NewRegisterView(View):
@@ -40,7 +34,6 @@ class NewRegisterView(View):
         self.params = params
         self.router: FletRouter = self.params.router
         self.register_manager = register_manager
-        self.selected_date = None
         self.scroll = "auto"
         self.hormone_field = Dropdown(
             options=[DropdownOption(key="TSH", content=Text("Hormona TSH"))],
@@ -56,7 +49,6 @@ class NewRegisterView(View):
             expand=True,
             border=InputBorder.NONE,
         )
-        self.date_text = Text("Fecha De Analisis")
         self.controls = [
             Column(
                 controls=[
@@ -96,25 +88,6 @@ class NewRegisterView(View):
                                         controls=[
                                             Text("Resultado"),
                                             self.result_field,
-                                        ]
-                                    ),
-                                    padding=padding.only(top=20),
-                                ),
-                                Container(
-                                    content=Column(
-                                        controls=[
-                                            self.date_text,
-                                            Button(
-                                                "Seleccionar Fecha",
-                                                on_click=lambda e: self.page.open(
-                                                    BottomSheet(
-                                                        content=CupertinoDatePicker(
-                                                            on_change=self.handle_date_select,
-                                                            use_24h_format=True,
-                                                        ),
-                                                    )
-                                                ),
-                                            ),
                                         ]
                                     ),
                                     padding=padding.only(top=20),
@@ -163,17 +136,10 @@ class NewRegisterView(View):
         )
 
     def handle_sumbit(self, e):
-        print(self.hormone_field)
-        if not self.selected_date:
-            self.selected_date = datetime.datetime.now()
-
         if not self.hormone_field.value:
             return
 
         if not self.result_field.value:
-            return
-
-        if not self.selected_date:
             return
 
         register = self.register_manager.add_register(
@@ -199,11 +165,3 @@ class NewRegisterView(View):
 
         if register:
             self.router.replace("/")
-
-    def handle_date_select(self, e):
-        self.selected_date = e.data
-        self.date_text.value = (
-            f"Fecha De Analisis: {Formater.format_datetime(self.selected_date)[0]}"
-        )
-        self.date_text.update()
-        return self.selected_date
