@@ -1,4 +1,5 @@
 from flet import (
+    AlertDialog,
     AppBar,
     Colors,
     Column,
@@ -21,6 +22,12 @@ from flet import (
     View,
     border,
     padding,
+)
+from flet_barcode_scanner import (
+    BarcodeFormat,
+    BarcodeScanner,
+    CameraFacing,
+    DetectionMode,
 )
 from flet_routing import FletRouter, Params
 
@@ -48,6 +55,15 @@ class NewRegisterView(View):
             multiline=True,
             expand=True,
             border=InputBorder.NONE,
+        )
+        self.scanner = BarcodeScanner(
+            camera_facing=CameraFacing.BACK,
+            detection_mode=DetectionMode.ONCE,
+            formats=[BarcodeFormat.QR, BarcodeFormat.CODE128, BarcodeFormat.PDF417],
+            torch=False,
+            auto_close=True,
+            overlay_title="Show the code to the camera",
+            on_result=lambda e: ...
         )
         self.controls = [
             Column(
@@ -77,6 +93,28 @@ class NewRegisterView(View):
                             )
                         ],
                         alignment=MainAxisAlignment.CENTER,
+                    ),
+                    Container(
+                        content=Row(
+                            controls=[
+                                Icon(
+                                    Icons.QR_CODE_SCANNER,
+                                    color=Colors.WHITE,
+                                    size=30
+                                ),
+                                Text(
+                                    "Escanea el código QR de tu resultado",
+                                    color=Colors.WHITE,
+                                    size=16,
+                                ),
+                            ],
+                            alignment=MainAxisAlignment.CENTER,
+                        ),
+                        padding=16,
+                        border_radius=20,
+                        bgcolor=Colors.DEEP_PURPLE_ACCENT_200,
+                        ink=True,
+                        on_click=lambda e: self.scanner.start(),
                     ),
                     Container(
                         content=Column(
@@ -165,3 +203,8 @@ class NewRegisterView(View):
 
         if register:
             self.router.replace("/")
+
+    def did_mount(self):
+        self.page.overlay.append(self.scanner)
+        self.page.update()
+        return super().did_mount()

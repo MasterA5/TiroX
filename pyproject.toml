@@ -10,6 +10,7 @@ authors = [
 dependencies = [
   "flet==0.28.3",
   "flet-routing>=1.1.0",
+  "flet_barcode_scanner @git+https://github.com/MasterA5/flet-barcode-scanner",
 ]
 
 [tool.flet]
