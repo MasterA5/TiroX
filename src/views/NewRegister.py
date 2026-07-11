@@ -1,3 +1,5 @@
+import json
+
 from flet import (
     AlertDialog,
     AppBar,
@@ -63,7 +65,7 @@ class NewRegisterView(View):
             torch=False,
             auto_close=True,
             overlay_title="Show the code to the camera",
-            on_result=lambda e: ...
+            on_result=self.handle_sumbit,
         )
         self.controls = [
             Column(
@@ -98,9 +100,7 @@ class NewRegisterView(View):
                         content=Row(
                             controls=[
                                 Icon(
-                                    Icons.QR_CODE_SCANNER,
-                                    color=Colors.WHITE,
-                                    size=30
+                                    Icons.QR_CODE_SCANNER, color=Colors.WHITE, size=30
                                 ),
                                 Text(
                                     "Escanea el código QR de tu resultado",
@@ -174,37 +174,88 @@ class NewRegisterView(View):
         )
 
     def handle_sumbit(self, e):
-        if not self.hormone_field.value:
-            return
+        if e.name == "result":
+            try:
+                data = json.loads(e.data)["rawValue"]
+                parsed_data = json.loads(data)
+                register = self.register_manager.add_register(
+                    Register(
+                        hormone=parsed_data.get("hormone"),
+                        value=float(parsed_data.get("value")),
+                    )
+                )
+            except Exception as e:
+                self.page.open(
+                    AlertDialog(
+                        title=Text("Error"),
+                        content=Column(
+                            controls=[
+                                Text(f"Error al procesar el código QR: {e}"),
+                                Text(data),
+                            ]
+                        ),
+                        actions=[
+                            IconButton(
+                                Icons.CLOSE,
+                                on_click=lambda e: self.page.close(e.control.parent),
+                            )
+                        ],
+                    )
+                )
+        else:
+            if not self.__validate_fields():
+                self.page.open(
+                    AlertDialog(
+                        title=Text("Error"),
+                        content=Text("Por favor, completa todos los campos"),
+                        actions=[
+                            IconButton(
+                                Icons.CLOSE,
+                                on_click=lambda e: self.page.close(e.control.parent),
+                            )
+                        ],
+                    )
+                )
+                return
 
-        if not self.result_field.value:
-            return
-
-        register = self.register_manager.add_register(
-            Register(
-                hormone=self.hormone_field.value,
-                value=float(self.result_field.value),
-                notes=self.notes_field.value,
+            register = self.register_manager.add_register(
+                Register(
+                    hormone=self.hormone_field.value,
+                    value=float(self.result_field.value),
+                    notes=self.notes_field.value,
+                )
             )
-        )
-
-        self.page.open(
-            SnackBar(
-                content=Row(
-                    controls=[
-                        Icon(Icons.CHECK_CIRCLE, color=Colors.WHITE),
-                        Text("Registro Creado"),
-                    ]
-                ),
-                behavior=SnackBarBehavior.FLOATING,
-                bgcolor=Colors.DEEP_PURPLE_ACCENT_200,
-            )
-        )
 
         if register:
+            self.page.open(
+                SnackBar(
+                    content=Row(
+                        controls=[
+                            Icon(Icons.CHECK_CIRCLE, color=Colors.WHITE),
+                            Text("Registro Creado"),
+                        ]
+                    ),
+                    behavior=SnackBarBehavior.FLOATING,
+                    bgcolor=Colors.DEEP_PURPLE_ACCENT_200,
+                )
+            )
             self.router.replace("/")
 
+    def __validate_fields(self):
+        if not self.hormone_field.value:
+            return False
+
+        if not self.result_field.value:
+            return False
+
+        return True
+
     def did_mount(self):
-        self.page.overlay.append(self.scanner)
+        if self.page.platform in (
+            PagePlatform.ANDROID,
+            PagePlatform.IOS,
+            PagePlatform.MACOS,
+        ):
+            self.page.overlay.append(self.scanner)
         self.page.update()
         return super().did_mount()
