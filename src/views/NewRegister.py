@@ -33,7 +33,7 @@ from flet_barcode_scanner import (
 )
 from flet_routing import FletRouter, Params
 
-from components.AnimatedButton import AnimatedButton
+from components.StylishButton import StylishButton
 from core.RegisterManager import Register, RegisterManager
 
 
@@ -143,11 +143,10 @@ class NewRegisterView(View):
                                             ),
                                             Row(
                                                 controls=[
-                                                    AnimatedButton(
-                                                        text="Guardar",
-                                                        final_width=110,
-                                                        icon=Icons.SAVE_ALT,
+                                                    StylishButton(
+                                                        text="Guardar Registro",
                                                         on_click=self.handle_sumbit,
+                                                        icon=Icons.SAVE,
                                                     ),
                                                 ],
                                                 alignment=MainAxisAlignment.CENTER,

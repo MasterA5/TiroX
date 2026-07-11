@@ -28,10 +28,10 @@ from flet import (
 )
 from flet_routing import FletRouter, Params
 
-from components.AnimatedButton import AnimatedButton
 from components.HistoryCard import HistoryCard
 from components.LastResultCard import LastResultCard
 from components.RangeCard import RangeCard
+from components.StylishButton import StylishButton
 from core.RegisterManager import RegisterManager
 
 
@@ -136,12 +136,13 @@ class HomeView(View):
                 range_card,
                 Row(
                     controls=[
-                        AnimatedButton(
+                        StylishButton(
                             on_click=lambda e: self.router.push(
                                 path="/create/register"
                             ),
-                            icon=Icons.ADD,
                             text="Nuevo Registro",
+                            bgcolor=Colors.DEEP_PURPLE_ACCENT_200,
+                            icon=Icons.ADD
                         ),
                     ],
                     alignment=MainAxisAlignment.CENTER,
