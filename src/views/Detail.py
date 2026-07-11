@@ -1,14 +1,16 @@
 from uuid import UUID
 
 from flet import (
+    AlertDialog,
     AppBar,
-    Button,
     Colors,
     Column,
     Container,
     FontWeight,
+    Icon,
     IconButton,
     Icons,
+    Image,
     MainAxisAlignment,
     Row,
     Text,
@@ -19,8 +21,10 @@ from flet_routing import Params
 
 from components.DetailCard import DetailCard
 from components.RangeCard import RangeCard
+from components.StylishButton import StylishButton
 from core.RegisterManager import RegisterManager
 from utils.formater import Formater
+from utils.generate_qrcode import generate_qrcode
 
 
 class DetailView(View):
@@ -63,7 +67,7 @@ class DetailView(View):
                                     border=border.all(3, Colors.GREY_300),
                                     border_radius=20,
                                     expand=True,
-                                    height=300,
+                                    height=200,
                                 ),
                             ],
                             expand=True,
@@ -73,12 +77,21 @@ class DetailView(View):
             ),
             Row(
                 controls=[
-                    Button(
+                    StylishButton(
+                        text="Generar Codigo QR Del Registro",
+                        icon=Icons.QR_CODE,
+                        bgcolor=Colors.DEEP_PURPLE_ACCENT_200,
+                        on_click=self.generate_code,
+                    ),
+                ],
+                alignment=MainAxisAlignment.CENTER,
+            ),
+            Row(
+                controls=[
+                    StylishButton(
                         text="Eliminar Registro",
                         icon=Icons.DELETE,
-                        icon_color=Colors.RED,
-                        color=Colors.RED,
-                        bgcolor=Colors.WHITE,
+                        bgcolor=Colors.DEEP_PURPLE_ACCENT_200,
                     ),
                 ],
                 alignment=MainAxisAlignment.CENTER,
@@ -89,3 +102,31 @@ class DetailView(View):
         reg_id = UUID(self.params.path.get("id"))
         register = self.register_manager.get_register_data_by_id(reg_id)
         return register
+
+    def generate_code(self, e):
+        image_base64 = generate_qrcode(self.data)
+
+        self.page.open(
+            AlertDialog(
+                title=Row(
+                    controls=[
+                        Icon(Icons.QR_CODE, color=Colors.DEEP_PURPLE_ACCENT_200),
+                        Text(
+                            "Codigo QR Generado!!",
+                            color=Colors.DEEP_PURPLE_ACCENT_200,
+                            weight=FontWeight.BOLD,
+                        ),
+                    ]
+                ),
+                content=Image(
+                    src_base64=image_base64,
+                ),
+                actions=[
+                    StylishButton(
+                        text="Cerrar",
+                        icon=Icons.CLOSE,
+                        on_click=lambda e: self.page.close(e.control.parent),
+                    )
+                ],
+            )
+        )
