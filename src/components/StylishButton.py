@@ -16,7 +16,7 @@ from flet import (
 class StylishButton(Container):
     def __init__(
         self,
-        text: str,
+        text: str = "",
         on_click: Callable[[any], None] | None = None,
         bgcolor: Colors = Colors.DEEP_PURPLE_ACCENT_200,
         text_color: Colors = Colors.WHITE,
