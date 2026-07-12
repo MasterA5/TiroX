@@ -19,7 +19,7 @@ class StylishSnackBar(SnackBar):
         icon: IconValue | None = None,
         bgcolor: ColorValue = Colors.DEEP_PURPLE_ACCENT_200,
     ):
-        super().__init__()
+        super().__init__(None)
         self.text = text if isinstance(text, Control) else Text(text)
         self.icon = icon
         self.content = Row(
@@ -29,7 +29,7 @@ class StylishSnackBar(SnackBar):
                     color=Colors.WHITE,
                     visible=self.icon is not None,
                 ),
-                text,
+                self.text,
             ]
         )
         self.behavior = SnackBarBehavior.FLOATING
@@ -39,3 +39,8 @@ class StylishSnackBar(SnackBar):
 class RegisterCreatedSuccefull(StylishSnackBar):
     def __init__(self):
         super().__init__(text="Registro Creado", icon=Icons.CHECK_CIRCLE)
+
+
+class RegisterDeletedSuccefull(StylishSnackBar):
+    def __init__(self):
+        super().__init__(text="Registro Eliminado", icon=Icons.CHECK_CIRCLE)
