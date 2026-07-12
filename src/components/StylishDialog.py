@@ -2,11 +2,13 @@ from flet import (
     AlertDialog,
     Colors,
     Column,
+    Container,
     Control,
     FontWeight,
     Icon,
     Icons,
     Image,
+    OptionalControlEventCallable,
     Row,
     Text,
 )
@@ -21,20 +23,35 @@ class StylishDialog(AlertDialog):
         content: Control | None = None,
         actions: list[Control] | None = None,
     ):
-        super().__init__()
-        self.title = title if isinstance(title, Control) else Text(title)
-        self.content = Column(controls=[content], tight=True)
-        self.actions = (
-            [
-                StylishButton(
-                    text="Cerrar",
-                    icon=Icons.CLOSE,
-                    on_click=lambda e: self.page.close(e.control.parent),
-                )
-            ]
-            if not actions
-            else actions
-        )
+        super().__init__(modal=True)
+
+        # Título
+        if title is None:
+            self.title = None
+        elif isinstance(title, Control):
+            self.title = title
+        else:
+            self.title = Text(title)
+
+        # Contenido
+        if content is None:
+            self.content = None
+        elif isinstance(content, Column):
+            self.content = content
+        else:
+            self.content = Column(
+                controls=[content],
+                tight=True,
+            )
+
+        # Acciones
+        self.actions = actions or [
+            StylishButton(
+                text="Cerrar",
+                icon=Icons.CLOSE,
+                on_click=lambda e: self.page.close(self),
+            )
+        ]
 
 
 class QRSuccessfullyCreated(StylishDialog):
@@ -74,9 +91,7 @@ class FieldsError(StylishDialog):
 
 
 class QRProccessError(StylishDialog):
-    def __init__(
-        self,
-    ):
+    def __init__(self):
         super().__init__(
             title=Text("Error"),
             content=Column(
@@ -86,3 +101,18 @@ class QRProccessError(StylishDialog):
                 ]
             ),
         )
+
+
+class DeleteRegisterConfirm(StylishDialog):
+    def __init__(self, on_delete: OptionalControlEventCallable = None):
+        super().__init__()
+        self.title = Text("Estas Seguro Que Quieres Eliminar Este Registro?")
+        self.actions = [
+            StylishButton(text="Eliminar", icon=Icons.DELETE, on_click=on_delete),
+            Container(height=10),
+            StylishButton(
+                text="Cancelar",
+                icon=Icons.CANCEL,
+                on_click=lambda e: self.page.close(e.control.parent),
+            ),
+        ]
