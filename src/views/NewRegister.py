@@ -195,7 +195,7 @@ class NewRegisterView(View):
 
         if register:
             self.page.open(RegisterCreatedSuccefull())
-            self.router.replace("/")
+            self.router.replace("/", {"lst_idx": 1})
 
     def __validate_fields(self):
         if not self.hormone_field.value:
