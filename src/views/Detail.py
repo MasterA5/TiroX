@@ -14,13 +14,14 @@ from flet import (
     View,
     border,
 )
-from flet_routing import Params
+from flet_routing import FletRouter, Params
 
 from components.DetailCard import DetailCard
 from components.RangeCard import RangeCard
 from components.StylishButton import StylishButton
-from components.StylishDialog import QRSuccessfullyCreated
-from core.RegisterManager import RegisterManager
+from components.StylishDialog import DeleteRegisterConfirm, QRSuccessfullyCreated
+from components.StylishSnackBar import RegisterDeletedSuccefull
+from core.RegisterManager import Register, RegisterManager
 from utils.formater import Formater
 from utils.generate_qrcode import generate_qrcode
 
@@ -29,10 +30,10 @@ class DetailView(View):
     def __init__(self, params: Params, manager: RegisterManager | None = None):
         super().__init__(f"/detail/{params.path['id']}")
         self.params = params
-        self.router = self.params.router
+        self.router: FletRouter = self.params.router
         self.scroll = "auto"
         self.register_manager = manager
-        self.data = self.get_register_info()
+        self.data: Register = self.get_register_info()
         self.appbar = AppBar(
             title=Text(f"{Formater.format_datetime(str(self.data.date))[0]}"),
             leading=IconButton(
@@ -90,6 +91,9 @@ class DetailView(View):
                         text="Eliminar Registro",
                         icon=Icons.DELETE,
                         bgcolor=Colors.DEEP_PURPLE_ACCENT_200,
+                        on_click=lambda e: self.page.open(
+                            DeleteRegisterConfirm(self.__handle_delete)
+                        ),
                     ),
                 ],
                 alignment=MainAxisAlignment.CENTER,
@@ -105,3 +109,10 @@ class DetailView(View):
         image_base64 = generate_qrcode(self.data)
 
         self.page.open(QRSuccessfullyCreated(image_base64))
+
+    def __handle_delete(self, e):
+        deleted = self.register_manager.delete_register(self.data.id)
+
+        if deleted:
+            self.page.open(RegisterDeletedSuccefull())
+            self.router.replace("/", {"lst_idx": 1})
