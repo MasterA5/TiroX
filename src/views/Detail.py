@@ -1,16 +1,13 @@
 from uuid import UUID
 
 from flet import (
-    AlertDialog,
     AppBar,
     Colors,
     Column,
     Container,
     FontWeight,
-    Icon,
     IconButton,
     Icons,
-    Image,
     MainAxisAlignment,
     Row,
     Text,
@@ -22,6 +19,7 @@ from flet_routing import Params
 from components.DetailCard import DetailCard
 from components.RangeCard import RangeCard
 from components.StylishButton import StylishButton
+from components.StylishDialog import QRSuccessfullyCreated
 from core.RegisterManager import RegisterManager
 from utils.formater import Formater
 from utils.generate_qrcode import generate_qrcode
@@ -106,27 +104,4 @@ class DetailView(View):
     def generate_code(self, e):
         image_base64 = generate_qrcode(self.data)
 
-        self.page.open(
-            AlertDialog(
-                title=Row(
-                    controls=[
-                        Icon(Icons.QR_CODE, color=Colors.DEEP_PURPLE_ACCENT_200),
-                        Text(
-                            "Codigo QR Generado!!",
-                            color=Colors.DEEP_PURPLE_ACCENT_200,
-                            weight=FontWeight.BOLD,
-                        ),
-                    ]
-                ),
-                content=Image(
-                    src_base64=image_base64,
-                ),
-                actions=[
-                    StylishButton(
-                        text="Cerrar",
-                        icon=Icons.CLOSE,
-                        on_click=lambda e: self.page.close(e.control.parent),
-                    )
-                ],
-            )
-        )
+        self.page.open(QRSuccessfullyCreated(image_base64))

@@ -1,7 +1,6 @@
 import json
 
 from flet import (
-    AlertDialog,
     AppBar,
     Colors,
     Column,
@@ -17,8 +16,6 @@ from flet import (
     MainAxisAlignment,
     PagePlatform,
     Row,
-    SnackBar,
-    SnackBarBehavior,
     Text,
     TextField,
     View,
@@ -34,6 +31,8 @@ from flet_barcode_scanner import (
 from flet_routing import FletRouter, Params
 
 from components.StylishButton import StylishButton
+from components.StylishDialog import FieldsError, QRProccessError
+from components.StylishSnackBar import RegisterCreatedSuccefull
 from core.RegisterManager import Register, RegisterManager
 
 
@@ -96,7 +95,7 @@ class NewRegisterView(View):
                         ],
                         alignment=MainAxisAlignment.CENTER,
                     ),
-                    Container(
+                    StylishButton(
                         content=Row(
                             controls=[
                                 Icon(
@@ -110,10 +109,6 @@ class NewRegisterView(View):
                             ],
                             alignment=MainAxisAlignment.CENTER,
                         ),
-                        padding=16,
-                        border_radius=20,
-                        bgcolor=Colors.DEEP_PURPLE_ACCENT_200,
-                        ink=True,
                         on_click=lambda e: self.scanner.start(),
                     ),
                     Container(
@@ -184,37 +179,10 @@ class NewRegisterView(View):
                     )
                 )
             except Exception as e:
-                self.page.open(
-                    AlertDialog(
-                        title=Text("Error"),
-                        content=Column(
-                            controls=[
-                                Text(f"Error al procesar el código QR: {e}"),
-                                Text(data),
-                            ]
-                        ),
-                        actions=[
-                            IconButton(
-                                Icons.CLOSE,
-                                on_click=lambda e: self.page.close(e.control.parent),
-                            )
-                        ],
-                    )
-                )
+                self.page.open(QRProccessError())
         else:
             if not self.__validate_fields():
-                self.page.open(
-                    AlertDialog(
-                        title=Text("Error"),
-                        content=Text("Por favor, completa todos los campos"),
-                        actions=[
-                            IconButton(
-                                Icons.CLOSE,
-                                on_click=lambda e: self.page.close(e.control.parent),
-                            )
-                        ],
-                    )
-                )
+                self.page.open(FieldsError())
                 return
 
             register = self.register_manager.add_register(
@@ -226,18 +194,7 @@ class NewRegisterView(View):
             )
 
         if register:
-            self.page.open(
-                SnackBar(
-                    content=Row(
-                        controls=[
-                            Icon(Icons.CHECK_CIRCLE, color=Colors.WHITE),
-                            Text("Registro Creado"),
-                        ]
-                    ),
-                    behavior=SnackBarBehavior.FLOATING,
-                    bgcolor=Colors.DEEP_PURPLE_ACCENT_200,
-                )
-            )
+            self.page.open(RegisterCreatedSuccefull())
             self.router.replace("/")
 
     def __validate_fields(self):
