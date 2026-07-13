@@ -323,7 +323,7 @@ class HomeView(View):
                 content=HistoryCard(
                     on_click=lambda e, id=reg_id: self.router.push(
                         f"/detail/{id}",
-                        {"lst_idx": self.current_index},
+                        {"lst_idx": 1},
                     ),
                     value=float(reg_value),
                     date=reg_date,
@@ -482,8 +482,8 @@ class HomeView(View):
         self.update()
 
     def __handle_nav(self, e: ControlEvent):
-        if not e:
-            idx = self.params.private.get("lst_idx")
+        if e is None:
+            idx = self.params.private.get("lst_idx", 0)
         else:
             idx = int(e.data)
 
@@ -491,7 +491,9 @@ class HomeView(View):
             return
 
         self.current_index = idx
+        self.__show_page(idx)
 
+    def __show_page(self, idx: int) -> int:
         match self.current_index:
             case 0:
                 self.main_container.content = self.__build_home_content()
@@ -504,11 +506,14 @@ class HomeView(View):
         self.drawer.selected_index = idx
 
         self.main_container.update()
-        self.page.update()
 
     def did_mount(self):
-        if self.params.private.get("lst_idx", 0):
-            self.current_index = self.params.private.get("lst_idx", 0)
-            self.__handle_nav(None)
+        idx = self.params.private.get("lst_idx")
+
+        if idx is not None:
+            self.current_index = idx
+            self.__show_page(idx)
+
         self.params.private.clear()
+
         return super().did_mount()
