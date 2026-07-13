@@ -102,6 +102,19 @@ class QRProccessError(StylishDialog):
             ),
         )
 
+class QRGenerationError(StylishDialog):
+    def __init__(self, error: str):
+        super().__init__(
+            title=Text("Error"),
+            content=Column(
+                controls=[
+                    Text("Error Al Generar El Código QR"),
+                    Text("Porfavor Vuelve a Intentarlo De Nuevo"),
+                    Text(error),
+                ]
+            ),
+        )
+
 
 class DeleteRegisterConfirm(StylishDialog):
     def __init__(self, on_delete: OptionalControlEventCallable = None):
