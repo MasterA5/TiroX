@@ -19,7 +19,11 @@ from flet_routing import FletRouter, Params
 from components.DetailCard import DetailCard
 from components.RangeCard import RangeCard
 from components.StylishButton import StylishButton
-from components.StylishDialog import DeleteRegisterConfirm, QRSuccessfullyCreated
+from components.StylishDialog import (
+    DeleteRegisterConfirm,
+    QRGenerationError,
+    QRSuccessfullyCreated,
+)
 from components.StylishSnackBar import RegisterDeletedSuccefull
 from core.RegisterManager import Register, RegisterManager
 from utils.formater import Formater
@@ -106,9 +110,11 @@ class DetailView(View):
         return register
 
     def generate_code(self, e):
-        image_base64 = generate_qrcode(self.data)
-
-        self.page.open(QRSuccessfullyCreated(image_base64))
+        try:
+            image_base64 = generate_qrcode(self.data)
+            self.page.open(QRSuccessfullyCreated(image_base64))
+        except Exception as e:
+            self.page.open(QRGenerationError(e))
 
     def __handle_delete(self, e):
         deleted = self.register_manager.delete_register(self.data.id)
