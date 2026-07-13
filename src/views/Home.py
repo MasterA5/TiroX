@@ -6,6 +6,7 @@ from flet import (
     Column,
     Container,
     ControlEvent,
+    CrossAxisAlignment,
     CupertinoContextMenu,
     CupertinoContextMenuAction,
     FontWeight,
@@ -121,51 +122,108 @@ class HomeView(View):
     def __build_home_content(self):
         last_register = self.register_manager.get_last_register()
 
-        if not last_register:
-            last_result_card = Container(
-                content=Row(
-                    controls=[
-                        Icon(Icons.ERROR_OUTLINE, color=Colors.PURPLE_200, size=30),
-                        Text("No Se econtraron registros", color=Colors.WHITE, size=25),
-                    ],
-                    alignment=MainAxisAlignment.CENTER,
-                ),
-                padding=15,
-                bgcolor=Colors.DEEP_PURPLE_ACCENT_200,
-                border_radius=20,
-                height=200,
-            )
-            range_card = RangeCard(0)
-        else:
-            range_card = RangeCard(last_register.value)
+        if last_register:
             last_result_card = LastResultCard(
                 hormone=last_register.hormone,
                 value=last_register.value,
                 date=last_register.date,
             )
+            range_card = RangeCard(last_register.value)
+        else:
+            last_result_card = Container(
+                height=170,
+                border_radius=25,
+                bgcolor=Colors.DEEP_PURPLE_ACCENT_200,
+                alignment=alignment.center,
+                content=Column(
+                    alignment=MainAxisAlignment.CENTER,
+                    horizontal_alignment=CrossAxisAlignment.CENTER,
+                    controls=[
+                        Icon(
+                            Icons.INSERT_CHART_OUTLINED,
+                            size=60,
+                            color=Colors.WHITE,
+                        ),
+                        Text(
+                            "Todavía no hay registros",
+                            size=22,
+                            weight=FontWeight.BOLD,
+                            color=Colors.WHITE,
+                        ),
+                        Text(
+                            "Agrega tu primer análisis para comenzar.",
+                            color=Colors.WHITE70,
+                        ),
+                    ],
+                ),
+            )
+
+            range_card = RangeCard(0)
 
         return Column(
+            scroll="auto",
+            spacing=24,
             controls=[
                 Container(
-                    content=Text("Resumen", weight=FontWeight.BOLD, size=16),
-                    padding=padding.only(top=5),
+                    padding=padding.only(left=10, right=10, top=10),
+                    content=Column(
+                        spacing=2,
+                        controls=[
+                            Text(
+                                "Bienvenido 👋",
+                                size=15,
+                                color=Colors.GREY_500,
+                            ),
+                            Text(
+                                "Resumen",
+                                size=32,
+                                weight=FontWeight.BOLD,
+                            ),
+                        ],
+                    ),
                 ),
                 last_result_card,
                 range_card,
+                Container(
+                    padding=padding.only(left=5),
+                    content=Text(
+                        "Acciones rápidas",
+                        size=18,
+                        weight=FontWeight.BOLD,
+                    ),
+                ),
                 Row(
+                    spacing=15,
                     controls=[
-                        StylishButton(
-                            on_click=lambda e: self.router.push(
-                                path="/create/register"
+                        Container(
+                            StylishButton(
+                                on_click=lambda e: self.router.push("/create/register"),
+                                text="Nuevo Registro",
+                                icon=Icons.ADD,
+                                bgcolor=Colors.DEEP_PURPLE_ACCENT_200,
                             ),
-                            text="Nuevo Registro",
-                            bgcolor=Colors.DEEP_PURPLE_ACCENT_200,
-                            icon=Icons.ADD,
+                            expand=True,
+                        ),
+                        Container(
+                            StylishButton(
+                                on_click=lambda e: self.__handle_nav(
+                                    ControlEvent(
+                                        target="",
+                                        name="change",
+                                        data="1",
+                                        control=None,
+                                        page=self.page,
+                                    )
+                                ),
+                                text="Historial",
+                                icon=Icons.HISTORY,
+                                bgcolor=Colors.BLUE_400,
+                            ),
+                            expand=True,
                         ),
                     ],
-                    alignment=MainAxisAlignment.CENTER,
                 ),
-            ]
+            ],
         )
 
     def __build_history_content(self):
@@ -339,12 +397,13 @@ class HomeView(View):
                     text="General",
                     sections=[
                         SettingsCard(
-                            icon=Icons.LIGHT_MODE,
+                            icon=Icons.LIGHT_MODE
+                            if self.page.theme_mode != ThemeMode.DARK
+                            else Icons.DARK_MODE,
                             title="Tema",
                             action=Switch(
                                 inactive_thumb_color=Colors.DEEP_PURPLE_ACCENT_200,
                                 active_color=Colors.DEEP_PURPLE_ACCENT_200,
-                                thumb_icon=Icons.LIGHT_MODE,
                                 on_change=lambda e: (
                                     setattr(
                                         self.page,
@@ -360,16 +419,12 @@ class HomeView(View):
                                         if self.page.theme_mode == ThemeMode.DARK
                                         else Icons.LIGHT_MODE,
                                     ),
-                                    setattr(
-                                        e.control,
-                                        "thumb_icon",
-                                        Icons.DARK_MODE
-                                        if self.page.theme_mode == ThemeMode.DARK
-                                        else Icons.LIGHT_MODE,
-                                    ),
                                     e.control.parent.update(),
                                     self.page.update(),
                                 ),
+                                value=False
+                                if self.page.theme_mode != ThemeMode.DARK
+                                else True,
                             ),
                         ),
                         SettingsCard(
@@ -377,7 +432,7 @@ class HomeView(View):
                             title="Notificaciones",
                             action=Switch(
                                 thumb_color=Colors.DEEP_PURPLE_ACCENT_200,
-                                active_color=Colors.DEEP_PURPLE_ACCENT_200
+                                active_color=Colors.DEEP_PURPLE_ACCENT_200,
                             ),
                         ),
                     ],
@@ -388,7 +443,7 @@ class HomeView(View):
                         SettingsCard(
                             icon=Icons.IOS_SHARE,
                             title="Exporta Tus Registros",
-                            subtitle="Exporta Una Copia De Tus Registros"
+                            subtitle="Exporta Una Copia De Tus Registros",
                         ),
                         SettingsCard(
                             icon=Icons.SYNC,
