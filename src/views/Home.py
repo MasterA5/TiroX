@@ -21,19 +21,22 @@ from flet import (
     NavigationDrawerDestination,
     Row,
     SafeArea,
+    Switch,
     Text,
     TextSpan,
     TextStyle,
+    ThemeMode,
     View,
     alignment,
-    margin,
     padding,
 )
 from flet_routing import FletRouter, Params
 
+from components.AnimatedIcon import RotatingSettingsWheel
 from components.HistoryCard import HistoryCard
 from components.LastResultCard import LastResultCard
 from components.RangeCard import RangeCard
+from components.SettingCardSection import SettingsCard, SettingsCardSection
 from components.StylishButton import StylishButton
 from components.StylishSnackBar import RegisterDeletedSuccefull
 from core.RegisterManager import RegisterManager
@@ -81,18 +84,18 @@ class HomeView(View):
                     ),
                     padding=padding.only(left=10),
                 ),
-                NavigationDrawerDestination(label="Home", icon=Icons.HOME),
-                NavigationDrawerDestination(label="Your Data", icon=Icons.FINGERPRINT),
-                NavigationDrawerDestination(label="Settings", icon=Icons.SETTINGS),
+                NavigationDrawerDestination(label="Inicio", icon=Icons.HOME),
+                NavigationDrawerDestination(label="Historial", icon=Icons.FINGERPRINT),
+                NavigationDrawerDestination(label="Configuracion", icon=Icons.SETTINGS),
             ],
             on_change=self.__handle_nav,
             tile_padding=23,
         )
         self.navigation_bar = NavigationBar(
             destinations=[
-                NavigationBarDestination(label="Home", icon=Icons.HOME),
-                NavigationBarDestination(label="Your Data", icon=Icons.FINGERPRINT),
-                NavigationBarDestination(label="Settings", icon=Icons.SETTINGS),
+                NavigationBarDestination(label="Inicio", icon=Icons.HOME),
+                NavigationBarDestination(label="Historial", icon=Icons.FINGERPRINT),
+                NavigationBarDestination(label="Configuracion", icon=Icons.SETTINGS),
             ],
             on_change=self.__handle_nav,
             label_behavior=NavigationBarLabelBehavior.ONLY_SHOW_SELECTED,
@@ -311,121 +314,109 @@ class HomeView(View):
             scroll="auto",
             spacing=25,
             controls=[
-                # HEADER
                 Container(
-                    padding=padding.symmetric(horizontal=20, vertical=10),
                     content=Column(
                         spacing=5,
                         controls=[
-                            Text(
-                                "Configuración",
-                                size=30,
-                                weight=FontWeight.BOLD,
+                            Row(
+                                controls=[
+                                    RotatingSettingsWheel(36),
+                                    Text(
+                                        "Configuración",
+                                        size=30,
+                                        weight=FontWeight.BOLD,
+                                    ),
+                                ]
                             ),
                             Text(
-                                "Personaliza la aplicación",
+                                "Personaliza Tu Experiencia",
                                 color=Colors.GREY_500,
                             ),
                         ],
                     ),
                 ),
-                self.build_section_title("General"),
-                self.build_tile(
-                    Icons.DARK_MODE_OUTLINED,
-                    "Tema",
-                    "Oscuro",
+                SettingsCardSection(
+                    text="General",
+                    sections=[
+                        SettingsCard(
+                            icon=Icons.LIGHT_MODE,
+                            title="Tema",
+                            action=Switch(
+                                inactive_thumb_color=Colors.DEEP_PURPLE_ACCENT_200,
+                                active_color=Colors.DEEP_PURPLE_ACCENT_200,
+                                thumb_icon=Icons.LIGHT_MODE,
+                                on_change=lambda e: (
+                                    setattr(
+                                        self.page,
+                                        "theme_mode",
+                                        ThemeMode.DARK
+                                        if self.page.theme_mode != ThemeMode.DARK
+                                        else ThemeMode.LIGHT,
+                                    ),
+                                    setattr(
+                                        e.control.parent.parent.parent.icon,
+                                        "name",
+                                        Icons.DARK_MODE
+                                        if self.page.theme_mode == ThemeMode.DARK
+                                        else Icons.LIGHT_MODE,
+                                    ),
+                                    setattr(
+                                        e.control,
+                                        "thumb_icon",
+                                        Icons.DARK_MODE
+                                        if self.page.theme_mode == ThemeMode.DARK
+                                        else Icons.LIGHT_MODE,
+                                    ),
+                                    e.control.parent.update(),
+                                    self.page.update(),
+                                ),
+                            ),
+                        ),
+                        SettingsCard(
+                            icon=Icons.NOTIFICATIONS_OUTLINED,
+                            title="Notificaciones",
+                            action=Switch(
+                                thumb_color=Colors.DEEP_PURPLE_ACCENT_200,
+                                active_color=Colors.DEEP_PURPLE_ACCENT_200
+                            ),
+                        ),
+                    ],
                 ),
-                self.build_tile(
-                    Icons.NOTIFICATIONS_OUTLINED,
-                    "Notificaciones",
-                    "Activadas",
+                SettingsCardSection(
+                    text="Datos",
+                    sections=[
+                        SettingsCard(
+                            icon=Icons.IOS_SHARE,
+                            title="Exporta Tus Registros",
+                            subtitle="Exporta Una Copia De Tus Registros"
+                        ),
+                        SettingsCard(
+                            icon=Icons.SYNC,
+                            title="Sincroniza Tus Registros",
+                            subtitle="Sincroniza Tus Registros Para Estar Al Dia",
+                        ),
+                        SettingsCard(
+                            icon=Icons.DELETE_FOREVER_OUTLINED,
+                            title="Eliminar Todo Tus Registros",
+                            icon_color=Colors.RED_400,
+                        ),
+                    ],
                 ),
-                self.build_section_title("Datos"),
-                self.build_tile(
-                    Icons.DOWNLOAD_OUTLINED,
-                    "Exportar registros",
-                ),
-                self.build_tile(
-                    Icons.UPLOAD_OUTLINED,
-                    "Importar registros",
-                ),
-                self.build_tile(
-                    Icons.DELETE_FOREVER_OUTLINED,
-                    "Eliminar todos los registros",
-                    icon_color=Colors.RED_400,
-                ),
-                self.build_section_title("Información"),
-                self.build_tile(
-                    Icons.INFO_OUTLINE,
-                    "Acerca de",
-                ),
-                self.build_tile(
-                    Icons.FAVORITE_OUTLINE,
-                    "Versión",
-                    "1.0.0",
+                SettingsCardSection(
+                    text="Información",
+                    sections=[
+                        SettingsCard(
+                            icon=Icons.INFO_OUTLINE,
+                            title="Acerca de",
+                        ),
+                        SettingsCard(
+                            icon=Icons.FAVORITE_OUTLINE,
+                            title="Versión",
+                            subtitle="1.0.0",
+                        ),
+                    ],
                 ),
             ],
-        )
-
-    def build_tile(self, icon, title, subtitle=None, icon_color=None):
-        return Container(
-            margin=margin.symmetric(horizontal=16),
-            border_radius=20,
-            bgcolor=Colors.SURFACE,
-            ink=True,
-            padding=18,
-            content=Row(
-                controls=[
-                    Container(
-                        width=46,
-                        height=46,
-                        border_radius=23,
-                        bgcolor=Colors.with_opacity(
-                            0.12,
-                            icon_color or Colors.DEEP_PURPLE_ACCENT_200,
-                        ),
-                        alignment=alignment.center,
-                        content=Icon(
-                            icon,
-                            color=icon_color or Colors.DEEP_PURPLE_ACCENT_200,
-                        ),
-                    ),
-                    Container(
-                        content=Column(
-                            spacing=2,
-                            controls=[
-                                Text(
-                                    title,
-                                    size=17,
-                                    weight=FontWeight.W_600,
-                                ),
-                                Text(
-                                    subtitle or "",
-                                    color=Colors.GREY_500,
-                                    size=13,
-                                ),
-                            ],
-                        ),
-                        expand=True,
-                    ),
-                    Icon(
-                        Icons.ARROW_FORWARD_IOS_ROUNDED,
-                        size=18,
-                        color=Colors.GREY_500,
-                    ),
-                ]
-            ),
-        )
-
-    def build_section_title(self, text):
-        return Container(
-            padding=padding.only(left=20),
-            content=Text(
-                text.upper(),
-                size=13,
-                color=Colors.DEEP_PURPLE_ACCENT_200,
-                weight=FontWeight.BOLD,
-            ),
         )
 
     def delete_register(self, reg_id: UUID):
