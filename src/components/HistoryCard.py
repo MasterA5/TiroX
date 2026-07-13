@@ -4,6 +4,7 @@ from typing import Callable
 from flet import (
     BoxShadow,
     Colors,
+    ColorValue,
     Column,
     Container,
     FontWeight,
@@ -59,12 +60,14 @@ class HistoryCard(Container):
         on_click: Callable[[any], None] | None = None,
         value: float | str | None = None,
         date: str | datetime.datetime | None = None,
+        icon_color: ColorValue = Colors.DEEP_PURPLE_ACCENT_200,
     ):
         super().__init__()
         self.value = value
         self.date = date
         self.value_text = get_text_by_value(self.value)
         self.card_bgcolor, self.text_color = get_color_by_value(self.value)
+        self.icon_color = icon_color
         self.formated_date, self.formated_hour = Formater.format_datetime(
             str(self.date)
         )
@@ -96,7 +99,11 @@ class HistoryCard(Container):
                                     controls=[
                                         Row(
                                             controls=[
-                                                Icon(Icons.CALENDAR_MONTH, size=20),
+                                                Icon(
+                                                    Icons.CALENDAR_MONTH,
+                                                    size=20,
+                                                    color=self.icon_color,
+                                                ),
                                                 Text(self.formated_date),
                                             ],
                                             spacing=3,
@@ -105,7 +112,11 @@ class HistoryCard(Container):
                                 ),
                                 Row(
                                     controls=[
-                                        Icon(Icons.ACCESS_TIME, size=20),
+                                        Icon(
+                                            Icons.ACCESS_TIME,
+                                            size=20,
+                                            color=self.icon_color,
+                                        ),
                                         Text(self.formated_hour),
                                     ],
                                     spacing=3,
@@ -125,7 +136,7 @@ class HistoryCard(Container):
             blur_radius=1.12,
             blur_style=ShadowBlurStyle.OUTER,
         )
-        self.bgcolor = Colors.WHITE
+        self.bgcolor = Colors.SURFACE
         self.margin = margin.all(10)
         self.on_click = on_click
         self.ink = True
