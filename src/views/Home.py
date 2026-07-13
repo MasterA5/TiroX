@@ -487,6 +487,9 @@ class HomeView(View):
         else:
             idx = int(e.data)
 
+        if idx == self.current_index:
+            return
+
         self.current_index = idx
 
         match self.current_index:
