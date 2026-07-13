@@ -13,6 +13,7 @@ from flet import (
 from flet_routing import FletRouter, Params
 
 from core.RegisterManager import RegisterManager
+from views.About import AboutView
 from views.Detail import DetailView
 from views.Home import HomeView
 from views.NewRegister import NewRegisterView
@@ -57,5 +58,8 @@ async def main(page: Page):
     def detail(params: Params):
         return DetailView(params, manager)
 
+    @router.route("/about")
+    def about(params: Params):
+        return AboutView(params)
 
 app(target=main)
