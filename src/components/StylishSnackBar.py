@@ -20,7 +20,9 @@ class StylishSnackBar(SnackBar):
         bgcolor: ColorValue = Colors.DEEP_PURPLE_ACCENT_200,
     ):
         super().__init__(None)
-        self.text = text if isinstance(text, Control) else Text(text)
+        self.text = (
+            text if isinstance(text, Control) else Text(text, color=Colors.WHITE)
+        )
         self.icon = icon
         self.content = Row(
             controls=[
