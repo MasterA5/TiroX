@@ -463,6 +463,9 @@ class HomeView(View):
                         SettingsCard(
                             icon=Icons.INFO_OUTLINE,
                             title="Acerca de",
+                            on_click=lambda e: self.router.push(
+                                "/about", {"lst_idx": self.current_index}
+                            ),
                         ),
                         SettingsCard(
                             icon=Icons.FAVORITE_OUTLINE,
