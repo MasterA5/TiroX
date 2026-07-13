@@ -43,6 +43,7 @@ class NewRegisterView(View):
         self.router: FletRouter = self.params.router
         self.register_manager = register_manager
         self.scroll = "auto"
+        self.lst_idx = self.params.private.get("lst_idx", 0)
         self.hormone_field = Dropdown(
             options=[DropdownOption(key="TSH", content=Text("Hormona TSH"))],
             label="Selecciona el tipo de hormona",
@@ -162,7 +163,7 @@ class NewRegisterView(View):
                 Icons.ARROW_BACK
                 if self.router.page.platform != PagePlatform.IOS
                 else Icons.ARROW_BACK_IOS,
-                on_click=lambda e: self.router.back(),
+                on_click=lambda e: self.router.replace("/", {"lst_idx": self.lst_idx}),
             ),
             center_title=True,
         )
