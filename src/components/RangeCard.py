@@ -128,4 +128,4 @@ class RangeCard(Container):
             spread_radius=1.3,
             color=Colors.GREY_300,
         )
-        self.bgcolor = Colors.WHITE
+        self.bgcolor = Colors.SURFACE
