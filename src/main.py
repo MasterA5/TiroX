@@ -17,6 +17,7 @@ from views.About import AboutView
 from views.Detail import DetailView
 from views.Home import HomeView
 from views.NewRegister import NewRegisterView
+from views.Notification import NotificationsView
 
 
 async def main(page: Page):
@@ -61,5 +62,9 @@ async def main(page: Page):
     @router.route("/about")
     def about(params: Params):
         return AboutView(params)
+
+    @router.route("/notifications")
+    def notifications(params: Params):
+        return NotificationsView(params)
 
 app(target=main)

@@ -50,6 +50,7 @@ class HomeView(View):
         self.params = params
         self.router: FletRouter = self.params.router
         self.register_manager = manager
+        self.current_index = 0
         self.appbar = AppBar(
             title=Text(
                 "Tiro",
@@ -66,6 +67,9 @@ class HomeView(View):
             actions=[
                 IconButton(
                     icon=Icons.NOTIFICATIONS_OUTLINED,
+                    on_click=lambda e: self.router.push(
+                        "/notifications", {"lst_idx": self.current_index}
+                    ),
                 ),
             ],
         )
@@ -105,7 +109,6 @@ class HomeView(View):
         self.controls = [self.main_container]
         self.scroll = "auto"
         self.expand = True
-        self.current_index = 0
         self.history_list = ListView(
             controls=[],
             expand=True,
@@ -508,6 +511,8 @@ class HomeView(View):
         self.navigation_bar.selected_index = idx
         self.drawer.selected_index = idx
 
+        self.navigation_bar.update()
+        self.drawer.update()
         self.main_container.update()
 
     def did_mount(self):
