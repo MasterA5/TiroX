@@ -21,7 +21,6 @@ class NotificationsView(View):
         super().__init__("/notifications")
         self.router: FletRouter = params.router
         self.lst_idx = params.private.get("lst_idx", 0)
-        print(params.private.get("lst_idx"))
 
         self.appbar = AppBar(
             title=Text(
