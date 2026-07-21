@@ -16,6 +16,7 @@ from flet import (
     Text,
     TextSpan,
     TextStyle,
+    ThemeMode,
     margin,
     padding,
 )
@@ -136,7 +137,14 @@ class HistoryCard(Container):
             blur_radius=1.12,
             blur_style=ShadowBlurStyle.OUTER,
         )
-        self.bgcolor = Colors.SURFACE
         self.margin = margin.all(10)
         self.on_click = on_click
         self.ink = True
+
+    def build(self):
+        self.bgcolor = (
+            Colors.SURFACE
+            if self.page.theme_mode == ThemeMode.LIGHT
+            else Colors.DEEP_PURPLE_900
+        )
+        return super().build()
