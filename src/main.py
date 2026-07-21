@@ -20,7 +20,7 @@ from views.NewRegister import NewRegisterView
 from views.Notification import NotificationsView
 
 
-async def main(page: Page):
+def main(page: Page):
     page.theme_mode = ThemeMode.LIGHT
     page.scroll = ScrollMode.AUTO
 
