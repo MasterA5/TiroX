@@ -161,3 +161,7 @@ cython_debug/
 
 # Flet
 storage/
+
+*.http
+node_modules/
+package-lock.json
