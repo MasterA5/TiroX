@@ -1,0 +1,35 @@
+{
+  "name": "tirox-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Backend for TiroX application",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --verbose --detectOpenHandles"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "extensionsToTreatAsEsm": [],
+    "collectCoverage": true,
+    "coverageDirectory": "coverage"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.12.0",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "jest": "^30.4.2",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2"
+  }
+}
