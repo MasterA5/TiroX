@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TiroX - Tu salud tiroidea, bajo control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- GSAP Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- Three.js para el modelo 3D interactivo -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .reveal-up {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        /* Estilos para las tarjetas interactivas de componentes */
+        .component-card {
+            transition: all 0.3s ease;
+        }
+        .component-card:hover {
+            transform: translateY(-4px);
+            border-color: #818cf8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden">
+
+    <!-- Navbar -->
+    <header class="navbar sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-2xl gradient-bg flex items-center justify-center shadow-md shadow-indigo-500/20">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                </div>
+                <span class="text-xl font-bold tracking-tight text-slate-900">Tiro<span class="text-indigo-600">X</span></span>
+            </div>
+            <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-600">
+                <a href="#inicio" class="hover:text-indigo-600 transition">Inicio</a>
+                <a href="#caracteristicas" class="hover:text-indigo-600 transition">Características</a>
+                <a href="#hardware" class="hover:text-indigo-600 transition">Prototipo 3D</a>
+                <a href="#interfaz" class="hover:text-indigo-600 transition">Interfaz</a>
+            </nav>
+            <div>
+                <a href="#descargar" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white gradient-bg rounded-xl shadow-lg shadow-indigo-500/25 hover:opacity-95 transition">
+                    Descargar App
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <section id="inicio" class="pt-16 pb-24 overflow-hidden">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="grid lg:grid-cols-12 gap-12 items-center">
+                    <div class="lg:col-span-6 space-y-6 hero-text">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-600 border border-indigo-100">
+                            ✨ Gestión inteligente de salud
+                        </span>
+                        <h1 class="text-4xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.1]">
+                            Tu salud tiroidea, <br><span class="gradient-text">bajo control.</span>
+                        </h1>
+                        <p class="text-lg text-slate-600 max-w-lg">
+                            Monitorea tus niveles hormonales, lleva un registro detallado de tus análisis clínicos y comprende tu evolución médica de forma simple y visual.
+                        </p>
+                        
+                        <!-- Botones de descarga de tiendas -->
+                        <div id="descargar" class="flex flex-col sm:flex-row gap-4 pt-4">
+                            <!-- Botón App Store -->
+                            <a href="#descargar" class="inline-flex items-center gap-3 bg-slate-900 text-white px-5 py-3 rounded-2xl hover:bg-slate-800 transition shadow-lg shadow-slate-900/10">
+                                <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.83 5.37c.64-.78 1.07-1.86.95-2.94-.92.04-2.03.62-2.68 1.4-.58.68-1.09 1.78-.95 2.85 1.03.08 2.04-.51 2.68-1.31z"/>
+                                </svg>
+                                <div class="text-left">
+                                    <p class="text-[10px] text-slate-400 uppercase tracking-wider font-medium">Consíguelo en el</p>
+                                    <p class="text-sm font-semibold -mt-0.5">App Store</p>
+                                </div>
+                            </a>
+
+                            <!-- Botón Google Play -->
+                            <a href="#descargar" class="inline-flex items-center gap-3 bg-slate-900 text-white px-5 py-3 rounded-2xl hover:bg-slate-800 transition shadow-lg shadow-slate-900/10">
+                                <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                                    <path d="M3.609 1.814L13.792 12 3.61 22.186a1.51 1.51 0 0 1-.36-.99V2.804a1.51 1.51 0 0 1 .359-.99zM15.208 13.416l2.122 2.122-11.455 6.618 9.333-8.74zm0-2.832L5.875 1.834l11.455 6.618-2.122 2.132zm2.832 1.416l3.18 1.836a1.008 1.008 0 0 1 0 1.748l-3.18 1.836-2.474-2.474 2.474-2.474z"/>
+                                </svg>
+                                <div class="text-left">
+                                    <p class="text-[10px] text-slate-400 uppercase tracking-wider font-medium">Disfrútalo en</p>
+                                    <p class="text-sm font-semibold -mt-0.5">Google Play</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-6 flex justify-center hero-image">
+                        <div class="relative w-full max-w-md bg-white p-4 rounded-3xl shadow-2xl border border-slate-100">
+                            <div class="absolute -top-4 -right-4 w-24 h-24 bg-indigo-100 rounded-full blur-2xl -z-10"></div>
+                            <div class="bg-slate-900 text-white rounded-2xl p-6 space-y-6 shadow-inner">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <p class="text-xs text-slate-400">Hola, Ana 👋</p>
+                                        <h2 class="text-lg font-bold">Resumen de hoy</h2>
+                                    </div>
+                                    <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs">A</div>
+                                </div>
+                                <div class="gradient-bg rounded-2xl p-5 space-y-3 shadow-lg">
+                                    <div class="flex justify-between items-center text-xs text-indigo-100">
+                                        <span>Último resultado • TSH</span>
+                                        <span>20 may 2024</span>
+                                    </div>
+                                    <div class="flex items-baseline space-x-2">
+                                        <span class="text-3xl font-extrabold">2.18</span>
+                                        <span class="text-xs text-indigo-100">mUI/L</span>
+                                    </div>
+                                    <span class="inline-block px-2.5 py-1 bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-xs font-medium rounded-full">
+                                        ✓ Normal
+                                    </span>
+                                </div>
+                                <div class="bg-slate-800/60 rounded-xl p-4 flex items-center justify-between">
+                                    <div class="space-y-1">
+                                        <p class="text-xs font-medium">Estado general</p>
+                                        <p class="text-[10px] text-slate-400">Rango: 0.27 - 4.20 mUI/L</p>
+                                    </div>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="caracteristicas" class="py-20 bg-white border-y border-slate-100">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="text-center max-w-2xl mx-auto mb-16 space-y-4 reveal-up">
+                    <h2 class="text-3xl font-bold tracking-tight text-slate-900">Diseñado para tu bienestar diario</h2>
+                    <p class="text-slate-600">Herramientas precisas enfocadas exclusivamente en el seguimiento de patologías y controles tiroideos.</p>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <!-- Feature 1 -->
+                    <div class="feature-card bg-slate-50 p-8 rounded-3xl border border-slate-100 space-y-4 hover:border-indigo-100 transition reveal-up">
+                        <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-lg">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900">Mide tu hormona tiroidea</h3>
+                        <p class="text-sm text-slate-600 leading-relaxed">Carga valores específicos como TSH, T4 Libre y T3 Libre de forma rápida y estructurada.</p>
+                    </div>
+                    <!-- Feature 2 -->
+                    <div class="feature-card bg-slate-50 p-8 rounded-3xl border border-slate-100 space-y-4 hover:border-indigo-100 transition reveal-up">
+                        <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-lg">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900">Lleva un registro de resultados</h3>
+                        <p class="text-sm text-slate-600 leading-relaxed">Historial completo ordenado cronológicamente para que nunca pierdas de vista ningún análisis previo.</p>
+                    </div>
+                    <!-- Feature 3 -->
+                    <div class="feature-card bg-slate-50 p-8 rounded-3xl border border-slate-100 space-y-4 hover:border-indigo-100 transition reveal-up">
+                        <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-lg">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900">Monitorea tu evolución</h3>
+                        <p class="text-sm text-slate-600 leading-relaxed">Analiza promedios, valores mínimos, máximos y el comportamiento general de tu organismo a lo largo del tiempo.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3D Hardware & Schematic Explainer Section -->
+        <section id="hardware" class="py-24 bg-slate-900 text-white relative overflow-hidden">
+            <div class="max-w-7xl mx-auto px-6 relative z-10">
+                <div class="text-center max-w-2xl mx-auto mb-16 space-y-4 reveal-up">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                        Arquitectura de Hardware
+                    </span>
+                    <h2 class="text-3xl lg:text-4xl font-extrabold tracking-tight">Prototipo ESP32 y Conexiones</h2>
+                    <p class="text-slate-400">Interactúa con el modelo 3D del microcontrolador o revisa los componentes principales integrados en el sistema.</p>
+                </div>
+
+                <div class="grid lg:grid-cols-12 gap-12 items-center">
+                    <!-- Visor 3D Interactivo -->
+                    <div class="lg:col-span-7 reveal-up">
+                        <div class="bg-slate-800/80 border border-slate-700/60 rounded-3xl p-4 shadow-2xl relative">
+                            <div class="absolute top-6 left-6 z-20 bg-slate-900/80 backdrop-blur px-3 py-1.5 rounded-xl border border-slate-700 text-xs text-indigo-300 font-medium">
+                                💡 Haz clic y arrastra para girar el ESP32 en 3D
+                            </div>
+                            <!-- Contenedor WebGL Three.js -->
+                            <div id="canvas-container" class="w-full h-[400px] sm:h-[450px] rounded-2xl cursor-grab active:cursor-grabbing"></div>
+                        </div>
+                    </div>
+
+                    <!-- Panel Explicativo de Componentes (Inspirado en el esquema eléctrico) -->
+                    <div class="lg:col-span-5 space-y-4 reveal-up">
+                        <div class="component-card bg-slate-800/60 border border-slate-700 p-5 rounded-2xl space-y-2">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm">⚡</div>
+                                <h3 class="font-bold text-white">Alimentación de Energía (5V)</h3>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed">Entrada de 5V vía MicroUSB conectada a VIN y masa común a GND del sistema central.</p>
+                        </div>
+
+                        <div class="component-card bg-slate-800/60 border border-slate-700 p-5 rounded-2xl space-y-2">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-sm">🔄</div>
+                                <h3 class="font-bold text-white">Bus de Datos I2C</h3>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed">Comunicación establecida con líneas SDA en GPIO 21 y SCL en GPIO 22 para periféricos compatibles.</p>
+                        </div>
+
+                        <div class="component-card bg-slate-800/60 border border-slate-700 p-5 rounded-2xl space-y-2">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm">🎛️</div>
+                                <h3 class="font-bold text-white">Entradas: Pulsador y Sensor</h3>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed">Pulsador de inicio en GPIO 4 (Pull-Down) y sensor de temperatura/datos DS18B20 conectado en GPIO 5.</p>
+                        </div>
+
+                        <div class="component-card bg-slate-800/60 border border-slate-700 p-5 rounded-2xl space-y-2">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-sm">🔊</div>
+                                <h3 class="font-bold text-white">Salida: Buzzer Activo</h3>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed">Generación de alertas y señales acústicas mediante la conexión directa al pin GPIO 18.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- UI Showcase Section -->
+        <section id="interfaz" class="py-24 bg-slate-50 overflow-hidden">
+            <div class="max-w-7xl mx-auto px-6 text-center space-y-6">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-600 border border-indigo-100 reveal-up">
+                    Prototipo UI
+                </span>
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900 reveal-up">Vistazo al Diseño de la Interfaz</h2>
+                <p class="text-slate-600 max-w-xl mx-auto reveal-up">Una interfaz limpia, intuitiva y amigable orientada a brindar paz mental y claridad en cada consulta de resultados.</p>
+                <div class="pt-8 showcase-container reveal-up">
+                    <div class="bg-white p-4 sm:p-8 rounded-3xl shadow-xl border border-slate-200 inline-block max-w-5xl w-full">
+                        <img src="ChatGPT Image 8 jul 2026, 12_33_00.png" alt="Diseño de UI de TiroX" class="rounded-2xl w-full h-auto shadow-sm">
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-100 py-12">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-xl gradient-bg flex items-center justify-center text-white font-bold text-sm">
+                    T
+                </div>
+                <span class="text-base font-bold text-slate-900">TiroX</span>
+            </div>
+            <p class="text-sm text-slate-500">© 2026 TiroX. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- GSAP & Three.js Scripts -->
+    <script>
+        document.addEventListener("DOMContentLoaded", (event) => {
+            // Animación de entrada para el Hero Text e Imagen
+            gsap.from(".hero-text > *", {
+                opacity: 0,
+                y: 40,
+                duration: 1,
+                stagger: 0.2,
+                ease: "power3.out"
+            });
+
+            gsap.from(".hero-image", {
+                opacity: 0,
+                scale: 0.9,
+                duration: 1.2,
+                ease: "power3.out",
+                delay: 0.3
+            });
+
+            // Animaciones al hacer scroll con IntersectionObserver
+            const observerOptions = {
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        gsap.to(entry.target, {
+                            opacity: 1,
+                            y: 0,
+                            duration: 0.8,
+                            ease: "power3.out"
+                        });
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll(".reveal-up").forEach((el) => {
+                observer.observe(el);
+            });
+
+            // Inicializar Modelo 3D con Three.js (Representación estilizada de placa ESP32 y componentes)
+            const container = document.getElementById('canvas-container');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            // Luz ambiental y direccional
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            directionalLight.position.set(5, 5, 5);
+            scene.add(directionalLight);
+
+            // Grupo para la placa ESP32 3D simulada
+            const boardGroup = new THREE.Group();
+
+            // Placa base (PCB)
+            const pcbGeometry = new THREE.BoxGeometry(2.2, 0.1, 3.8);
+            const pcbMaterial = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4 });
+            const pcb = new THREE.Mesh(pcbGeometry, pcbMaterial);
+            boardGroup.add(pcb);
+
+            // Chip ESP32 central (Metálico/Negro)
+            const chipGeometry = new THREE.BoxGeometry(1.0, 0.15, 1.2);
+            const chipMaterial = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.8, roughness: 0.2 });
+            const chip = new THREE.Mesh(chipGeometry, chipMaterial);
+            chip.position.set(0, 0.1, -0.2);
+            boardGroup.add(chip);
+
+            // Antena / Módulo superior
+            const antennaGeometry = new THREE.BoxGeometry(1.2, 0.08, 0.9);
+            const antennaMaterial = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.5 });
+            const antenna = new THREE.Mesh(antennaGeometry, antennaMaterial);
+            antenna.position.set(0, 0.1, -1.3);
+            boardGroup.add(antenna);
+
+            // Pines laterales (Pines de conexión)
+            const pinMaterial = new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.9 });
+            for (let i = 0; i < 15; i++) {
+                const zPos = -1.6 + (i * 0.23);
+                // Izquierda
+                const pinLeft = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.05, 0.15), pinMaterial);
+                pinLeft.position.set(-1.15, 0, zPos);
+                boardGroup.add(pinLeft);
+                // Derecha
+                const pinRight = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.05, 0.15), pinMaterial);
+                pinRight.position.set(1.15, 0, zPos);
+                boardGroup.add(pinRight);
+            }
+
+            // Conector USB inferior
+            const usbGeometry = new THREE.BoxGeometry(0.6, 0.12, 0.5);
+            const usbMaterial = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.1 });
+            const usb = new THREE.Mesh(usbGeometry, usbMaterial);
+            usb.position.set(0, 0.08, 1.7);
+            boardGroup.add(usb);
+
+            scene.add(boardGroup);
+            camera.position.set(0, 4, 5);
+            camera.lookAt(0, 0, 0);
+
+            // Interactividad con el mouse (Rotación manual)
+            let isDragging = false;
+            let previousMousePosition = { x: 0, y: 0 };
+
+            container.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const deltaX = e.clientX - previousMousePosition.x;
+                const deltaY = e.clientY - previousMousePosition.y;
+
+                boardGroup.rotation.y += deltaX * 0.01;
+                boardGroup.rotation.x += deltaY * 0.01;
+
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
+
+            window.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            // Soporte táctil para móviles
+            container.addEventListener('touchstart', (e) => {
+                isDragging = true;
+                previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            });
+
+            window.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                const deltaX = e.touches[0].clientX - previousMousePosition.x;
+                const deltaY = e.touches[0].clientY - previousMousePosition.y;
+
+                boardGroup.rotation.y += deltaX * 0.01;
+                boardGroup.rotation.x += deltaY * 0.01;
+
+                previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            });
+
+            window.addEventListener('touchend', () => {
+                isDragging = false;
+            });
+
+            // Animación de bucle (Idle rotation si no se arrastra)
+            function animate() {
+                requestAnimationFrame(animate);
+                if (!isDragging) {
+                    boardGroup.rotation.y += 0.005;
+                }
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // Responsive del canvas 3D
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        });
+    </script>
+</body>
+</html>

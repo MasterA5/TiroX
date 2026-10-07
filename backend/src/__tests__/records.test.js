@@ -20,6 +20,8 @@ jest.unstable_mockModule('../models/Record.js', () => ({
       id: 'aabbccdd-1122-3344-aabb-ccdd11223344',
       hormone: row.hormone,
       result: row.result,
+      notes: row.notes || null,
+      created_at: row.created_at ? new Date(row.created_at).toISOString() : null,
       user_id: userId
     }))
   }
@@ -54,6 +56,8 @@ describe('Records Routes', () => {
         id: 'record-uuid-1234-5678-9abc-def012345678',
         hormone: 'TSH',
         result: 4.50,
+        notes: null,
+        created_at: '2026-01-01T00:00:00.000Z',
         user_id: testUserId
       });
 
@@ -66,7 +70,47 @@ describe('Records Routes', () => {
       expect(res.body.hormone).toBe('TSH');
       expect(res.body.result).toBe(4.50);
       expect(res.body.user_id).toBe(testUserId);
-      expect(Record.create).toHaveBeenCalledTimes(1);
+      expect(Record.create).toHaveBeenCalledWith({
+        userId: testUserId,
+        hormone: 'TSH',
+        result: 4.50,
+        notes: undefined
+      });
+    });
+
+    it('deberia crear un registro con notas', async () => {
+      Record.create.mockResolvedValue({
+        id: 'record-uuid-1234-5678-9abc-def012345678',
+        hormone: 'TSH',
+        result: 4.5,
+        notes: 'Ayuno previo',
+        created_at: '2026-01-01T00:00:00.000Z',
+        user_id: testUserId
+      });
+
+      const res = await request(app)
+        .post('/api/records')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ hormone: 'TSH', result: 4.50, notes: 'Ayuno previo' });
+
+      expect(res.status).toBe(201);
+      expect(Record.create).toHaveBeenCalledWith({
+        userId: testUserId,
+        hormone: 'TSH',
+        result: 4.50,
+        notes: 'Ayuno previo'
+      });
+    });
+
+    it('deberia rechazar si faltan campos requeridos', async () => {
+      const res = await request(app)
+        .post('/api/records')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ hormone: 'TSH' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe('Missing required fields');
+      expect(Record.create).not.toHaveBeenCalled();
     });
 
     it('deberia rechazar si no hay token', async () => {

@@ -1,5 +1,7 @@
+import os
 from uuid import UUID
 
+from dotenv import load_dotenv
 from flet import (
     AppBar,
     Colors,
@@ -18,8 +20,6 @@ from flet import (
     NavigationBar,
     NavigationBarDestination,
     NavigationBarLabelBehavior,
-    NavigationDrawer,
-    NavigationDrawerDestination,
     Row,
     SafeArea,
     Switch,
@@ -39,8 +39,15 @@ from components.LastResultCard import LastResultCard
 from components.RangeCard import RangeCard
 from components.SettingCardSection import SettingsCard, SettingsCardSection
 from components.StylishButton import StylishButton
-from components.StylishSnackBar import RegisterDeletedSuccefull
+from components.StylishSnackBar import (
+    ErrorSnackBar,
+    RegisterDeletedSuccefull,
+    SyncFailed,
+    SyncSuccefull,
+)
 from core.RegisterManager import RegisterManager
+
+load_dotenv()
 
 
 class HomeView(View):
@@ -71,30 +78,13 @@ class HomeView(View):
                         "/notifications", {"lst_idx": self.current_index}
                     ),
                 ),
-            ],
-        )
-        self.drawer = NavigationDrawer(
-            controls=[
-                Container(
-                    content=Text(
-                        "Tiro",
-                        size=30,
-                        weight=FontWeight.BOLD,
-                        spans=[
-                            TextSpan(
-                                "X",
-                                style=TextStyle(color=Colors.DEEP_PURPLE_ACCENT_200),
-                            )
-                        ],
+                IconButton(
+                    icon=Icons.ACCOUNT_CIRCLE,
+                    on_click=lambda e: self.router.push(
+                        "/account", {"lst_idx": self.current_index}
                     ),
-                    padding=padding.only(left=10),
                 ),
-                NavigationDrawerDestination(label="Inicio", icon=Icons.HOME),
-                NavigationDrawerDestination(label="Historial", icon=Icons.FINGERPRINT),
-                NavigationDrawerDestination(label="Configuracion", icon=Icons.SETTINGS),
             ],
-            on_change=self.__handle_nav,
-            tile_padding=23,
         )
         self.navigation_bar = NavigationBar(
             destinations=[
@@ -452,6 +442,7 @@ class HomeView(View):
                             icon=Icons.SYNC,
                             title="Sincroniza Tus Registros",
                             subtitle="Sincroniza Tus Registros Para Estar Al Dia",
+                            on_click=lambda e: self.page.run_task(self.__manual_sync),
                         ),
                         SettingsCard(
                             icon=Icons.DELETE_FOREVER_OUTLINED,
@@ -463,6 +454,14 @@ class HomeView(View):
                 SettingsCardSection(
                     text="Información",
                     sections=[
+                        SettingsCard(
+                            icon=Icons.PERSON_OUTLINE,
+                            title="Mi Cuenta",
+                            subtitle="Gestiona tu sesión",
+                            on_click=lambda e: self.router.push(
+                                "/account", {"lst_idx": self.current_index}
+                            ),
+                        ),
                         SettingsCard(
                             icon=Icons.INFO_OUTLINE,
                             title="Acerca de",
@@ -477,15 +476,68 @@ class HomeView(View):
                         ),
                     ],
                 ),
+                SettingsCardSection(
+                    text="Opciones De Desarollo (Beta)",
+                    sections=[
+                        SettingsCard(
+                            Icons.LINK,
+                            title="Opciones De Desarollador",
+                            on_click=lambda e: self.router.push(
+                                "/dev-options", {"lst_idx": self.current_index}
+                            ),
+                        ),
+                        SettingsCard(
+                            Icons.SATELLITE_ALT,
+                            title="Habilitar Telemtria",
+                            subtitle="(Desactivar si hay mal rendimiento)",
+                            action=Switch(
+                                thumb_color=Colors.DEEP_PURPLE_ACCENT_200,
+                                active_color=Colors.DEEP_PURPLE_ACCENT_200,
+                            ),
+                        ),
+                    ],
+                    visible=bool(os.getenv("BUILD_STATE", "production") == "dev"),
+                ),
             ],
         )
 
     def delete_register(self, reg_id: UUID):
-        self.register_manager.delete_register(reg_id)
+        self.page.run_task(self.__delete_register, reg_id)
 
-        self.__build_history_content()
-        self.page.open(RegisterDeletedSuccefull())
-        self.update()
+    async def __delete_register(self, reg_id: UUID):
+        deleted = await self.register_manager.delete_register(reg_id)
+
+        if deleted:
+            self.__build_history_content()
+            self.page.open(RegisterDeletedSuccefull())
+            self.update()
+
+    async def __initial_sync(self, e=None):
+        auth_manager = self.register_manager.auth_manager
+
+        if auth_manager and auth_manager.is_auth():
+            session_valid = await auth_manager.validate_session()
+            if not session_valid:
+                self.page.open(ErrorSnackBar("Tu sesión expiró, inicia de nuevo"))
+                self.router.replace("/login")
+                return
+
+            had_pending = any(
+                r.pending_sync for r in self.register_manager.get_all_registers()
+            )
+            synced = await self.register_manager.sync_with_server()
+            if synced:
+                self.__show_page(self.current_index)
+                if had_pending:
+                    self.page.open(SyncSuccefull())
+
+    async def __manual_sync(self, e=None):
+        synced = await self.register_manager.sync_with_server()
+        if synced:
+            self.__show_page(self.current_index)
+            self.page.open(SyncSuccefull())
+        else:
+            self.page.open(SyncFailed())
 
     def __handle_nav(self, e: ControlEvent):
         if e is None:
@@ -509,19 +561,18 @@ class HomeView(View):
                 self.main_container.content = self.__build_settings_content()
 
         self.navigation_bar.selected_index = idx
-        self.drawer.selected_index = idx
 
         self.navigation_bar.update()
-        self.drawer.update()
         self.main_container.update()
 
     def did_mount(self):
         idx = self.params.private.get("lst_idx")
 
         if idx is not None:
-            self.current_index = idx
+            self.current_index = int(idx)
             self.__show_page(idx)
 
         self.params.private.clear()
+        self.page.run_task(self.__initial_sync)
 
         return super().did_mount()

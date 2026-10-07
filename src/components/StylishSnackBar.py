@@ -46,3 +46,24 @@ class RegisterCreatedSuccefull(StylishSnackBar):
 class RegisterDeletedSuccefull(StylishSnackBar):
     def __init__(self):
         super().__init__(text="Registro Eliminado", icon=Icons.CHECK_CIRCLE)
+
+
+class SyncSuccefull(StylishSnackBar):
+    def __init__(self):
+        super().__init__(
+            text="Registros Sincronizados", icon=Icons.CLOUD_DONE_OUTLINED
+        )
+
+
+class SyncFailed(StylishSnackBar):
+    def __init__(self):
+        super().__init__(
+            text="No Se Pudo Sincronizar Con El Servidor",
+            icon=Icons.CLOUD_OFF_OUTLINED,
+            bgcolor=Colors.RED_400,
+        )
+
+
+class ErrorSnackBar(StylishSnackBar):
+    def __init__(self, message: str):
+        super().__init__(text=message, icon=Icons.ERROR_OUTLINE, bgcolor=Colors.RED_400)

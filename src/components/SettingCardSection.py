@@ -87,8 +87,9 @@ class SettingsCardSection(Container):
         self,
         text: str | None = None,
         sections: list[SettingsCard] | None = None,
+        visible: bool = True
     ):
-        super().__init__()
+        super().__init__(visible=visible)
         self.padding = padding.only(left=10)
         self.content = Column(
             controls=[

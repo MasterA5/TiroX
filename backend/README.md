@@ -52,9 +52,19 @@ Backend para la aplicacion **TiroX**, una plataforma para el registro y seguimie
      id BINARY(16) NOT NULL PRIMARY KEY,
      hormone VARCHAR(50) NOT NULL,
      result DECIMAL(6,2) NOT NULL,
+     notes TEXT NULL,
      user_id BINARY(16) NOT NULL,
+     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
    );
+   ```
+
+   Si la tabla `registers` ya existe, aplicar:
+
+   ```sql
+   ALTER TABLE registers
+     ADD COLUMN notes TEXT NULL AFTER result,
+     ADD COLUMN created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER user_id;
    ```
 
 5. Iniciar el servidor:
@@ -112,6 +122,7 @@ tiroX-Backend/
 |--------|-------------------|--------------------------|-----------------------------------------------------------------------|
 | POST   | `/api/auth/register` | Registrar nuevo usuario  | `username`, `email`, `password`, `first_name`, `last_name`, `age` (opcional) |
 | POST   | `/api/auth/login`    | Iniciar sesion            | `email`, `password`                                                   |
+| GET    | `/api/auth/me`       | Obtener usuario del token (requiere `Authorization: Bearer <token>`) | -          |
 
 **Respuesta registro:**
 ```json
@@ -145,11 +156,11 @@ tiroX-Backend/
 
 | Metodo | Ruta                  | Descripcion                  | Body Requerido              |
 |--------|-----------------------|------------------------------|-----------------------------|
-| POST   | `/api/records`        | Crear un registro nuevo      | `hormone`, `result`         |
+| POST   | `/api/records`        | Crear un registro nuevo      | `hormone`, `result`, `notes` (opcional) |
 | GET    | `/api/records`        | Obtener todos mis registros  | -                           |
 | GET    | `/api/records/user/:userId` | Obtener registros de un usuario especifico | -          |
 | GET    | `/api/records/:id`    | Obtener un registro por ID   | -                           |
-| PUT    | `/api/records/:id`    | Actualizar un registro       | `hormone`, `result`         |
+| PUT    | `/api/records/:id`    | Actualizar un registro       | `hormone`, `result`, `notes` (opcional) |
 | DELETE | `/api/records/:id`    | Eliminar un registro         | -                           |
 
 **Ejemplo crear registro:**
@@ -157,7 +168,7 @@ tiroX-Backend/
 curl -X POST http://localhost:3000/api/records \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer TU_TOKEN_AQUI" \
-  -d '{"hormone": "TSH", "result": 4.50}'
+  -d '{"hormone": "TSH", "result": 4.50, "notes": "Ayuno previo"}'
 ```
 
 **Respuesta:**
@@ -166,6 +177,8 @@ curl -X POST http://localhost:3000/api/records \
   "id": "record-uuid-1234-5678-9abc-def012345678",
   "hormone": "TSH",
   "result": 4.50,
+  "notes": "Ayuno previo",
+  "created_at": "2026-01-01T12:00:00.000Z",
   "user_id": "12345678-1234-1234-1234-123456789abc"
 }
 ```
@@ -195,10 +208,10 @@ Los tests estan escritos con **Jest** (modo ESM) y **Supertest**. Mockean los mo
 npm test
 ```
 
-### Cobertura de Tests (28 tests)
+### Cobertura de Tests (34 tests)
 
-- **Auth (7):** Registro exitoso, usuario duplicado, login exitoso, credenciales invalidas, password incorrecta, errores del servidor.
-- **Records (16):** Crear, obtener todos, obtener por usuario, obtener uno, actualizar, eliminar, autenticacion requerida, tokens invalidos.
+- **Auth (11):** Registro exitoso, usuario duplicado, campos faltantes, login exitoso, credenciales invalidas, password incorrecta, errores del servidor, `/api/auth/me` (usuario autenticado, sin token, token invalido, usuario inexistente).
+- **Records (18):** Crear (con y sin notas), campos faltantes, obtener todos, obtener por usuario, obtener uno, actualizar, eliminar, autenticacion requerida, tokens invalidos.
 - **Middleware (5):** Token valido, token ausente, token invalido, token expirado, formato incorrecto.
 
 ---
