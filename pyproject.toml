@@ -11,8 +11,11 @@ dependencies = [
   "flet==0.28.3",
   "flet-routing>=1.1.0",
   "flet_barcode_scanner @git+https://github.com/MasterA5/flet-barcode-scanner",
+  "httpx>=0.27",
   "pillow==10.4.0",
+  "python-dotenv>=1.0",
   "qrcode>=7.4.2",
+  "dotenv"
 ]
 
 [tool.flet]
@@ -42,6 +45,7 @@ exclude = [
     "test_*.py",
     ".github/*",
     ".gitea/*",
+    "backend/*"
 ]
 
 [tool.uv]

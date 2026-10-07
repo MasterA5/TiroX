@@ -8,7 +8,8 @@ jest.unstable_mockModule('../models/User.js', () => ({
   default: {
     findByEmailOrUsername: jest.fn(),
     create: jest.fn(),
-    findByEmail: jest.fn()
+    findByEmail: jest.fn(),
+    findById: jest.fn()
   }
 }));
 
@@ -32,7 +33,8 @@ jest.unstable_mockModule('bcryptjs', () => ({
 
 jest.unstable_mockModule('jsonwebtoken', () => ({
   default: {
-    sign: jest.fn(() => 'mock-jwt-token')
+    sign: jest.fn(() => 'mock-jwt-token'),
+    verify: jest.fn(() => ({ id: '12345678-1234-1234-1234-123456789abc' }))
   }
 }));
 
@@ -47,6 +49,7 @@ describe('Auth Routes', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jwt.default.sign.mockReturnValue('mock-jwt-token');
+    jwt.default.verify.mockReturnValue({ id: '12345678-1234-1234-1234-123456789abc' });
   });
 
   describe('POST /api/auth/register', () => {
@@ -189,6 +192,58 @@ describe('Auth Routes', () => {
 
       expect(res.status).toBe(500);
       expect(res.body.message).toBe('Server error');
+    });
+  });
+
+  describe('GET /api/auth/me', () => {
+    it('deberia retornar el usuario autenticado', async () => {
+      User.findById.mockResolvedValue({
+        id: '12345678-1234-1234-1234-123456789abc',
+        username: 'testuser',
+        email: 'test@example.com',
+        first_name: 'Test',
+        last_name: 'User',
+        age: 15
+      });
+
+      const res = await request(app)
+        .get('/api/auth/me')
+        .set('Authorization', 'Bearer mock-jwt-token');
+
+      expect(res.status).toBe(200);
+      expect(res.body.user.username).toBe('testuser');
+      expect(res.body.user.email).toBe('test@example.com');
+      expect(res.body.user).not.toHaveProperty('password');
+      expect(User.findById).toHaveBeenCalledWith('12345678-1234-1234-1234-123456789abc');
+    });
+
+    it('deberia rechazar si no hay token', async () => {
+      const res = await request(app).get('/api/auth/me');
+
+      expect(res.status).toBe(401);
+      expect(User.findById).not.toHaveBeenCalled();
+    });
+
+    it('deberia rechazar si el token es invalido', async () => {
+      jwt.default.verify.mockImplementation(() => { throw new Error('invalid'); });
+
+      const res = await request(app)
+        .get('/api/auth/me')
+        .set('Authorization', 'Bearer invalid-token');
+
+      expect(res.status).toBe(401);
+      expect(User.findById).not.toHaveBeenCalled();
+    });
+
+    it('deberia retornar 404 si el usuario no existe', async () => {
+      User.findById.mockResolvedValue(null);
+
+      const res = await request(app)
+        .get('/api/auth/me')
+        .set('Authorization', 'Bearer mock-jwt-token');
+
+      expect(res.status).toBe(404);
+      expect(res.body.message).toBe('User not found');
     });
   });
 });

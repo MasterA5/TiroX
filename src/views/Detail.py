@@ -5,13 +5,16 @@ from flet import (
     Colors,
     Column,
     Container,
+    CrossAxisAlignment,
     FontWeight,
+    Icon,
     IconButton,
     Icons,
     MainAxisAlignment,
     Row,
     Text,
     View,
+    alignment,
     border,
 )
 from flet_routing import FletRouter, Params
@@ -24,7 +27,7 @@ from components.StylishDialog import (
     QRGenerationError,
     QRSuccessfullyCreated,
 )
-from components.StylishSnackBar import RegisterDeletedSuccefull
+from components.StylishSnackBar import ErrorSnackBar, RegisterDeletedSuccefull
 from core.RegisterManager import Register, RegisterManager
 from utils.formater import Formater
 from utils.generate_qrcode import generate_qrcode
@@ -37,7 +40,12 @@ class DetailView(View):
         self.router: FletRouter = self.params.router
         self.scroll = "auto"
         self.register_manager = manager
-        self.data: Register = self.get_register_info()
+        self.data: Register | None = self.get_register_info()
+
+        if self.data is None:
+            self.__build_not_found()
+            return
+
         self.appbar = AppBar(
             title=Text(f"{Formater.format_datetime(str(self.data.date))[0]}"),
             leading=IconButton(
@@ -104,10 +112,41 @@ class DetailView(View):
             ),
         ]
 
+    def __build_not_found(self):
+        self.appbar = AppBar(
+            title=Text("Registro no encontrado"),
+            leading=IconButton(
+                icon=Icons.ARROW_BACK,
+                on_click=lambda e: self.router.replace("/", {"lst_idx": 1}),
+            ),
+        )
+        self.controls = [
+            Container(
+                expand=True,
+                alignment=alignment.center,
+                content=Column(
+                    alignment=MainAxisAlignment.CENTER,
+                    horizontal_alignment=CrossAxisAlignment.CENTER,
+                    controls=[
+                        Icon(Icons.ERROR_OUTLINE, size=60, color=Colors.RED_400),
+                        Text(
+                            "Este registro ya no existe",
+                            size=22,
+                            weight=FontWeight.BOLD,
+                        ),
+                        Text("Puede que haya sido eliminado.", color=Colors.GREY_500),
+                    ],
+                    spacing=10,
+                ),
+            )
+        ]
+
     def get_register_info(self):
-        reg_id = UUID(self.params.path.get("id"))
-        register = self.register_manager.get_register_data_by_id(reg_id)
-        return register
+        try:
+            reg_id = UUID(self.params.path.get("id"))
+        except (ValueError, TypeError):
+            return None
+        return self.register_manager.get_register_data_by_id(reg_id)
 
     def generate_code(self, e):
         try:
@@ -117,8 +156,13 @@ class DetailView(View):
             self.page.open(QRGenerationError(e))
 
     def __handle_delete(self, e):
-        deleted = self.register_manager.delete_register(self.data.id)
+        self.page.run_task(self.__delete_register, e)
+
+    async def __delete_register(self, e):
+        deleted = await self.register_manager.delete_register(self.data.id)
 
         if deleted:
             self.page.open(RegisterDeletedSuccefull())
             self.router.replace("/", {"lst_idx": 1})
+        else:
+            self.page.open(ErrorSnackBar("No se pudo eliminar el registro"))

@@ -6,6 +6,10 @@ import Record from '../models/Record.js';
 export const register = async (req, res) => {
   const { username, email, password, first_name, last_name, age } = req.body;
 
+  if (!username || !email || !password || !first_name || !last_name) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
   try {
     const existingUser = await User.findByEmailOrUsername(email, username);
     if (existingUser.length > 0) {
@@ -28,13 +32,17 @@ export const register = async (req, res) => {
 
     res.status(201).json({ token, user: { id, username, email, first_name, last_name } });
   } catch (err) {
-    (err);
+    console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
 
   try {
     const user = await User.findByEmail(email);
@@ -52,7 +60,21 @@ export const login = async (req, res) => {
 
     res.json({ token, user: { id: userId, username: user.username, email: user.email } });
   } catch (err) {
-    (err);
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const me = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ user });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 };

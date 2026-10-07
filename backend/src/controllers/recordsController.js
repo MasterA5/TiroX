@@ -1,17 +1,22 @@
 import Record from '../models/Record.js';
 
 export const createRecord = async (req, res) => {
-  const { hormone, result } = req.body;
+  const { hormone, result, notes } = req.body;
+
+  if (!hormone || result === undefined || result === null || result === '') {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
 
   try {
     const record = await Record.create({
       userId: req.user.id,
       hormone,
-      result
+      result,
+      notes
     });
     res.status(201).json(record);
   } catch (err) {
-    (err);
+    console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -21,7 +26,7 @@ export const getMyRecords = async (req, res) => {
     const records = await Record.findByUserId(req.user.id);
     res.json(records);
   } catch (err) {
-    (err);
+    console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -31,7 +36,7 @@ export const getUserRecords = async (req, res) => {
     const records = await Record.findByUserId(req.params.userId);
     res.json(records);
   } catch (err) {
-    (err);
+    console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -43,21 +48,25 @@ export const getRecord = async (req, res) => {
 
     res.json(Record.formatRecord(record, req.user.id));
   } catch (err) {
-    (err);
+    console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
 export const updateRecord = async (req, res) => {
-  const { hormone, result } = req.body;
+  const { hormone, result, notes } = req.body;
+
+  if (!hormone || result === undefined || result === null || result === '') {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
 
   try {
-    const updated = await Record.update(req.params.id, req.user.id, { hormone, result });
+    const updated = await Record.update(req.params.id, req.user.id, { hormone, result, notes });
     if (!updated) return res.status(404).json({ message: 'Record not found or not authorized' });
 
     res.json({ message: 'Record updated' });
   } catch (err) {
-    (err);
+    console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -69,7 +78,7 @@ export const deleteRecord = async (req, res) => {
 
     res.json({ message: 'Record deleted' });
   } catch (err) {
-    (err);
+    console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 };

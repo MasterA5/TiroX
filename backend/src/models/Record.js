@@ -12,28 +12,40 @@ const binaryToUuid = (buf) => {
 const formatRecord = (row, userId) => ({
   id: binaryToUuid(row.id),
   hormone: row.hormone,
-  result: row.result,
+  result: row.result !== undefined && row.result !== null ? Number(row.result) : row.result,
+  notes: row.notes || null,
+  created_at: row.created_at ? new Date(row.created_at).toISOString() : null,
   user_id: userId
 });
 
 const Record = {
-  async create({ userId, hormone, result }) {
+  async create({ userId, hormone, result, notes }) {
     const id = uuidv4();
     const idBinary = uuidToBinary(id);
     const userBinary = uuidToBinary(userId);
 
     await db.query(
-      'INSERT INTO registers (id, hormone, result, user_id) VALUES (?, ?, ?, ?)',
-      [idBinary, hormone, result, userBinary]
+      'INSERT INTO registers (id, hormone, result, user_id, notes) VALUES (?, ?, ?, ?, ?)',
+      [idBinary, hormone, result, userBinary, notes || null]
     );
 
-    return { id, hormone, result, user_id: userId };
+    return {
+      id,
+      hormone,
+      result: Number(result),
+      notes: notes || null,
+      created_at: new Date().toISOString(),
+      user_id: userId
+    };
   },
 
   async findByUserId(userId) {
     const userBinary = uuidToBinary(userId);
-    const [rows] = await db.query('SELECT * FROM registers WHERE user_id = ?', [userBinary]);
-    return rows.map(r => formatRecord(r, userId));
+    const [rows] = await db.query(
+      'SELECT * FROM registers WHERE user_id = ? ORDER BY created_at ASC',
+      [userBinary]
+    );
+    return rows.map((r) => formatRecord(r, userId));
   },
 
   async findByIdAndUserId(id, userId) {
@@ -46,12 +58,12 @@ const Record = {
     return rows[0] || null;
   },
 
-  async update(id, userId, { hormone, result }) {
+  async update(id, userId, { hormone, result, notes }) {
     const idBinary = uuidToBinary(id);
     const userBinary = uuidToBinary(userId);
     const [resultUpdate] = await db.query(
-      'UPDATE registers SET hormone = ?, result = ? WHERE id = ? AND user_id = ?',
-      [hormone, result, idBinary, userBinary]
+      'UPDATE registers SET hormone = ?, result = ?, notes = ? WHERE id = ? AND user_id = ?',
+      [hormone, result, notes || null, idBinary, userBinary]
     );
     return resultUpdate.affectedRows > 0;
   },

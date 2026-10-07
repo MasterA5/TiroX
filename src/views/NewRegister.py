@@ -32,8 +32,11 @@ from flet_routing import FletRouter, Params
 
 from components.StylishButton import StylishButton
 from components.StylishDialog import FieldsError, QRProccessError
-from components.StylishSnackBar import RegisterCreatedSuccefull
-from core.RegisterManager import Register, RegisterManager
+from components.StylishSnackBar import (
+    ErrorSnackBar,
+    RegisterCreatedSuccefull,
+)
+from core.RegisterManager import RegisterManager
 
 
 class NewRegisterView(View):
@@ -96,21 +99,31 @@ class NewRegisterView(View):
                         ],
                         alignment=MainAxisAlignment.CENTER,
                     ),
-                    StylishButton(
-                        content=Row(
-                            controls=[
-                                Icon(
-                                    Icons.QR_CODE_SCANNER, color=Colors.WHITE, size=30
-                                ),
-                                Text(
-                                    "Escanea el código QR de tu resultado",
-                                    color=Colors.WHITE,
-                                    size=16,
-                                ),
-                            ],
-                            alignment=MainAxisAlignment.CENTER,
+                    Container(
+                        content=StylishButton(
+                            content=Row(
+                                controls=[
+                                    Icon(
+                                        Icons.QR_CODE_SCANNER,
+                                        color=Colors.WHITE,
+                                        size=30,
+                                    ),
+                                    Text(
+                                        "Escanea el código QR de tu resultado",
+                                        color=Colors.WHITE,
+                                        size=16,
+                                    ),
+                                ],
+                                alignment=MainAxisAlignment.CENTER,
+                            ),
+                            on_click=lambda e: self.scanner.start(),
                         ),
-                        on_click=lambda e: self.scanner.start(),
+                        visible=lambda: self.page.platform
+                        not in (
+                            PagePlatform.WINDOWS,
+                            PagePlatform.LINUX,
+                            PagePlatform.MACOS,
+                        ),
                     ),
                     Container(
                         content=Column(
@@ -169,34 +182,48 @@ class NewRegisterView(View):
         )
 
     def handle_sumbit(self, e):
+        self.page.run_task(self.__process_submit, e)
+
+    async def __process_submit(self, e):
         if e.name == "result":
             try:
                 data = json.loads(e.data)["rawValue"]
                 parsed_data = json.loads(data)
-                register = self.register_manager.add_register(
-                    Register(
-                        hormone=parsed_data.get("hormone"),
-                        value=float(parsed_data.get("value")),
-                    )
-                )
-            except Exception as e:
+                hormone = str(parsed_data.get("hormone") or "").strip()
+                value = float(parsed_data.get("value"))
+                notes = str(parsed_data.get("notes") or "")
+            except (json.JSONDecodeError, KeyError, TypeError, ValueError):
                 self.page.open(QRProccessError())
+                return
+
+            if not hormone:
+                self.page.open(QRProccessError())
+                return
         else:
             if not self.__validate_fields():
                 self.page.open(FieldsError())
                 return
 
-            register = self.register_manager.add_register(
-                Register(
-                    hormone=self.hormone_field.value,
-                    value=float(self.result_field.value),
-                    notes=self.notes_field.value,
-                )
-            )
+            try:
+                value = float(self.result_field.value)
+            except (TypeError, ValueError):
+                self.page.open(FieldsError())
+                return
+
+            hormone = self.hormone_field.value
+            notes = self.notes_field.value or ""
+
+        register = await self.register_manager.create_register(
+            hormone=hormone,
+            value=value,
+            notes=notes,
+        )
 
         if register:
             self.page.open(RegisterCreatedSuccefull())
             self.router.replace("/", {"lst_idx": 1})
+        else:
+            self.page.open(ErrorSnackBar("No se pudo guardar el registro"))
 
     def __validate_fields(self):
         if not self.hormone_field.value:
